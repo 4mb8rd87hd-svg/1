@@ -347,7 +347,7 @@ function getUserId() {
 var HIST_KEY = 'youaura_hist_v1_' + getUserId();
 var PENDING_KEY = 'youaura_pending_v1_' + getUserId();
 
-/* ===== АУДИО + МУЗЫКА (V2 — громче и выше) ===== */
+/* ===== АУДИО + МУЗЫКА ===== */
 var soundOn = true;
 try { soundOn = localStorage.getItem('youaura_sound') !== 'off'; } catch(e) {}
 var audioCtx = null;
@@ -1002,7 +1002,7 @@ function showActionButtons() {
   html += '<button class="vote-btn no" onclick="finishWithVote(\'no\')">❌ Нет</button>';
   html += '<button class="vote-btn partly" onclick="finishWithVote(\'partly\')">🟡 Частично</button>';
   html += '</div></div>';
-  html += '<div class="act-row"><button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
+  html += '<div class="act-row"><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
   area.innerHTML = html;
   area.style.display = 'block';
 }
@@ -1046,15 +1046,6 @@ function finishWithFull() {
   document.getElementById('hAcc').textContent = '🔍 ' + access;
   var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
-}
-
-function finishWithAnother() {
-  askConfirm('Текущий расклад не сохранён. Сделать новый?', function() {
-    soundPop(); haptic('light');
-    state.finished = false;
-    state.drawn = false;
-    go('s-spread');
-  });
 }
 
 function sendAndClose(payload, icon, text) {
