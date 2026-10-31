@@ -75,7 +75,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .act-secondary:active { transform:scale(0.97); background:rgba(255,255,255,0.12); }
 .act-save { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.35); color:#4ade80; }
 .act-save:active { background:rgba(74,222,128,0.2); }
-/* ===== ГОЛОСОВАНИЕ ===== */
 .vote-wrap { margin-top:14px; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; }
 .vote-title { font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:10px; font-weight:700; text-align:center; }
 .vote-row { display:flex; gap:6px; }
@@ -84,7 +83,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .vote-btn.no { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.4); color:#ef4444; }
 .vote-btn.partly { background:rgba(251,191,36,0.15); border-color:rgba(251,191,36,0.4); color:#fbbf24; }
 .vote-btn:active { transform:scale(0.97); }
-/* ===== /ГОЛОСОВАНИЕ ===== */
 .q-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; font-family:inherit; margin:12px 0; resize:none; }
 .q-input::placeholder { color:rgba(255,255,255,0.35); }
 .q-input:focus { outline:none; border-color:rgba(255,179,71,0.5); }
@@ -210,6 +208,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <div class="nkb-actions">
           <button class="nkb-btn" onclick="go('s-tasks')">🎁 Задания</button>
           <button class="nkb-btn" onclick="openSupportScreen()">✉️ Админу</button>
+        </div>
+      </div>
+      <div class="no-keys-banner" id="pendingBanner" style="display:none; background:rgba(167,139,250,0.12); border-color:rgba(167,139,250,0.4)">
+        <div class="nkb-text" id="pendingText" style="color:#a78bfa">⏳ У тебя есть неотмеченные расклады</div>
+        <div class="nkb-actions">
+          <button class="nkb-btn" onclick="openPendingModal()" style="background:rgba(167,139,250,0.2); border-color:rgba(167,139,250,0.5); color:#a78bfa">📤 Отметить</button>
         </div>
       </div>
       <button class="btn" onclick="go('s-spread')"><div class="btn-icon">🔮</div><div class="btn-info"><div class="btn-title">Сделать расклад</div><div class="btn-desc">5 видов · 78 карт</div></div></button>
@@ -341,6 +345,7 @@ function getUserId() {
   return 'anon_' + (params.get('name') || 'unknown');
 }
 var HIST_KEY = 'youaura_hist_v1_' + getUserId();
+var PENDING_KEY = 'youaura_pending_v1_' + getUserId();
 
 /* ===== АУДИО + МУЗЫКА ===== */
 var soundOn = true;
@@ -507,6 +512,82 @@ function askConfirm(text, onYes) {
   if (confirm(text)) onYes();
 }
 
+/* ===== PENDING (анти-накрутка) ===== */
+function loadPending() {
+  try {
+    var raw = localStorage.getItem(PENDING_KEY);
+    if (!raw) return [];
+    var a = JSON.parse(raw);
+    return Array.isArray(a) ? a : [];
+  } catch(e) { return []; }
+}
+function savePending(arr) {
+  try { localStorage.setItem(PENDING_KEY, JSON.stringify(arr)); } catch(e) {}
+}
+function addPending(entry) {
+  var arr = loadPending();
+  arr.unshift(entry);
+  if (arr.length > 20) arr = arr.slice(0, 20);
+  savePending(arr);
+  return arr.length;
+}
+function removePendingById(id) {
+  var arr = loadPending();
+  var out = [];
+  for (var i = 0; i < arr.length; i++) { if (arr[i].id !== id) out.push(arr[i]); }
+  savePending(out);
+  return out.length;
+}
+function flushPendingToBot() {
+  var arr = loadPending();
+  if (!arr.length) { showToast('Нет неотмеченных раскладов'); return; }
+  var json = JSON.stringify(arr);
+  var payload = 'sync_pending|' + json;
+  var ov = document.createElement('div');
+  ov.className = 'success-overlay';
+  ov.innerHTML = '<div class="success-icon">📤</div><div class="success-text">Отправка</div><div class="success-sub">Отмечаем ' + arr.length + ' расклад(ов)...</div>';
+  document.body.appendChild(ov);
+  soundSuccess(); haptic('success');
+  setTimeout(function() {
+    if (tg && tg.sendData) {
+      try {
+        tg.sendData(payload);
+        savePending([]);
+        setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
+      } catch(e) {
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+        showToast('Ошибка: ' + e.message, true);
+      }
+    } else {
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      showToast('Открой из Telegram', true);
+    }
+  }, 800);
+}
+function openPendingModal() {
+  var arr = loadPending();
+  if (!arr.length) { showToast('Нет неотмеченных раскладов'); return; }
+
+  var html = '<div class="no-keys-modal" onclick="event.stopPropagation()">';
+  html += '<div class="nk-icon">⏳</div>';
+  html += '<div class="nk-title">' + arr.length + ' расклад(ов) без оценки</div>';
+  html += '<div class="nk-sub">Отметь — баланс спишется автоматически</div>';
+  html += '<button class="nk-btn primary" onclick="flushPendingToBot()">📤 Отметить всё разом</button>';
+  html += '<button class="nk-close" onclick="closePendingModal()">Позже</button>';
+  html += '</div>';
+
+  var ov = document.createElement('div');
+  ov.className = 'no-keys-overlay';
+  ov.id = 'pendingOverlay';
+  ov.onclick = function(e) { if (e.target === ov) closePendingModal(); };
+  ov.innerHTML = html;
+  document.body.appendChild(ov);
+}
+function closePendingModal() {
+  var ov = document.getElementById('pendingOverlay');
+  if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+}
+
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
 document.getElementById('hBal').textContent = '🎟 ' + balance;
 document.getElementById('hAcc').textContent = '🔍 ' + access;
@@ -516,6 +597,14 @@ document.getElementById('pvAcc').textContent = access;
 document.getElementById('pvRead').textContent = readings;
 document.getElementById('pn').textContent = userName;
 updateSoundIcon();
+
+/* Корректировка баланса на pending */
+var pendingArr = loadPending();
+if (pendingArr.length > 0) {
+  balance = Math.max(0, balance - pendingArr.length);
+  document.getElementById('hBal').textContent = '🎟 ' + balance;
+  document.getElementById('pvFree').textContent = balance;
+}
 
 (function applyAvatar() {
   try {
@@ -533,6 +622,16 @@ updateSoundIcon();
     img.onerror = function() { avEl.textContent = initial; };
     img.src = url;
   } catch(e) {}
+})();
+
+(function initPendingBanner() {
+  var p = loadPending();
+  if (p.length > 0) {
+    var el = document.getElementById('pendingBanner');
+    var txt = document.getElementById('pendingText');
+    if (el) el.style.display = 'block';
+    if (txt) txt.textContent = '⏳ ' + p.length + ' расклад(ов) ждут оценки';
+  }
 })();
 
 if (balance < 1 && access < 1) {
@@ -805,10 +904,24 @@ function startReading(count, title) {
 }
 function drawCards() {
   if (state.drawn) return;
+  if (balance < 1) { openNoKeysModal(); return; }
   haptic('medium');
   var rawQ = document.getElementById('qinput').value.trim();
   state.question = (rawQ || 'без вопроса').replace(/\|/g, ' ');
   state.drawn = true;
+
+  /* ЛОКАЛЬНОЕ СПИСАНИЕ + PENDING */
+  balance = Math.max(0, balance - 1);
+  document.getElementById('hBal').textContent = '🎟 ' + balance;
+  document.getElementById('pvFree').textContent = balance;
+  addPending({
+    id: 'p_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
+    ts: Date.now(),
+    title: state.title,
+    count: state.count,
+    question: state.question
+  });
+
   document.getElementById('qinput').style.display = 'none';
   document.getElementById('qlocked').style.display = 'block';
   document.getElementById('qlocked-text').textContent = state.question;
@@ -867,7 +980,6 @@ function showActionButtons() {
 
 function finishWithVote(fb) {
   if (state.finished) return;
-  if (balance < 1) { showToast('Нет раскладов — нужен GIFT/WM', true); return; }
   state.finished = true;
   var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
@@ -876,9 +988,10 @@ function finishWithVote(fb) {
     cardNames.push(state.cards[i].n);
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: fb, synced: true });
-  balance = Math.max(0, balance - 1);
-  document.getElementById('hBal').textContent = '🎟 ' + balance;
-  document.getElementById('pvFree').textContent = balance;
+
+  var p = loadPending();
+  if (p.length > 0) removePendingById(p[0].id);
+
   var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fb;
   var icon = fb === 'yes' ? '✅' : (fb === 'no' ? '❌' : '🟡');
   var text = fb === 'yes' ? 'Сбылось! Спасибо' : (fb === 'no' ? 'Понятно. Учтём' : 'Спасибо за отзыв');
@@ -896,6 +1009,10 @@ function finishWithFull() {
     cardNames.push(state.cards[i].n);
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
+
+  var p = loadPending();
+  if (p.length > 0) removePendingById(p[0].id);
+
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
   var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
