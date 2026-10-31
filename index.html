@@ -347,84 +347,108 @@ function getUserId() {
 var HIST_KEY = 'youaura_hist_v1_' + getUserId();
 var PENDING_KEY = 'youaura_pending_v1_' + getUserId();
 
-/* ===== АУДИО + МУЗЫКА ===== */
+/* ===== АУДИО + МУЗЫКА (V2 — громче и выше) ===== */
 var soundOn = true;
 try { soundOn = localStorage.getItem('youaura_sound') !== 'off'; } catch(e) {}
 var audioCtx = null;
 var musicGain = null;
 var musicNodes = [];
 var musicStarted = false;
+var audioUnlocked = false;
 
-function initAudio() {
-  if (audioCtx) {
-    if (audioCtx.state === 'suspended') { try { audioCtx.resume().catch(function(){}); } catch(e) {} }
-    return;
-  }
+function createCtx() {
+  if (audioCtx) return audioCtx;
   try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') { try { audioCtx.resume().catch(function(){}); } catch(e) {} }
-  } catch(e) {}
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audioCtx = new AC();
+  } catch(e) { audioCtx = null; }
+  return audioCtx;
+}
+
+function unlockAudio() {
+  var c = createCtx();
+  if (!c) return;
+  if (c.state === 'suspended') {
+    var p = c.resume();
+    if (p && p.then) {
+      p.then(function() {
+        audioUnlocked = true;
+        if (soundOn && !musicGain) doStartMusic();
+      }).catch(function(){});
+    } else {
+      audioUnlocked = true;
+    }
+  } else {
+    audioUnlocked = true;
+    if (soundOn && !musicGain) doStartMusic();
+  }
 }
 
 function playTone(freq, dur, type, vol) {
   if (!soundOn) return;
-  initAudio();
-  if (!audioCtx) return;
+  var c = createCtx();
+  if (!c) return;
+  if (c.state === 'suspended') {
+    try { c.resume().catch(function(){}); } catch(e) {}
+  }
   try {
-    var o = audioCtx.createOscillator(); var g = audioCtx.createGain();
+    var o = c.createOscillator(); var g = c.createGain();
     o.type = type || 'sine'; o.frequency.value = freq;
-    g.gain.setValueAtTime(vol || 0.12, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + dur);
+    var v = vol || 0.15;
+    g.gain.setValueAtTime(0.0001, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(v, c.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(c.currentTime); o.stop(c.currentTime + dur + 0.05);
   } catch(e) {}
 }
-function soundFlip() { playTone(880, 0.06, 'sine', 0.06); setTimeout(function(){ playTone(1175, 0.06, 'sine', 0.06); }, 50); }
-function soundSuccess() { playTone(523, 0.1, 'sine', 0.1); setTimeout(function(){ playTone(659, 0.1, 'sine', 0.1); }, 80); setTimeout(function(){ playTone(784, 0.18, 'sine', 0.1); }, 160); }
-function soundError() { playTone(220, 0.15, 'sine', 0.1); setTimeout(function(){ playTone(165, 0.2, 'sine', 0.1); }, 100); }
-function soundPop() { playTone(700, 0.05, 'sine', 0.08); }
+function soundFlip() { playTone(900, 0.08, 'sine', 0.12); setTimeout(function(){ playTone(1300, 0.08, 'sine', 0.12); }, 60); }
+function soundSuccess() { playTone(659, 0.1, 'sine', 0.15); setTimeout(function(){ playTone(784, 0.1, 'sine', 0.15); }, 80); setTimeout(function(){ playTone(988, 0.2, 'sine', 0.15); }, 160); }
+function soundError() { playTone(300, 0.15, 'sine', 0.15); setTimeout(function(){ playTone(220, 0.2, 'sine', 0.15); }, 100); }
+function soundPop() { playTone(900, 0.05, 'sine', 0.12); }
 
-function startMusic() {
+function doStartMusic() {
   if (!soundOn) return;
-  initAudio();
-  if (!audioCtx) return;
-  if (audioCtx.state === 'suspended') {
-    try { audioCtx.resume().catch(function(){}); } catch(e) {}
+  var c = createCtx();
+  if (!c || musicGain) return;
+  if (c.state === 'suspended') {
+    try { c.resume().catch(function(){}); } catch(e) {}
   }
-  if (musicGain) return;
   try {
-    musicGain = audioCtx.createGain();
-    musicGain.gain.value = 0.0001;
-    musicGain.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime + 2.0);
-    musicGain.connect(audioCtx.destination);
+    musicGain = c.createGain();
+    var now = c.currentTime;
+    musicGain.gain.setValueAtTime(0.0001, now);
+    musicGain.gain.exponentialRampToValueAtTime(0.5, now + 2.0);
+    musicGain.connect(c.destination);
 
-    var filter = audioCtx.createBiquadFilter();
+    var filter = c.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 3000;
-    filter.Q.value = 0.5;
+    filter.frequency.value = 4000;
+    filter.Q.value = 0.6;
     filter.connect(musicGain);
 
     var freqs = [
-      { f: 164.81, type: 'sine',     vol: 0.35 },
-      { f: 220,    type: 'sine',     vol: 0.40 },
-      { f: 261.63, type: 'triangle', vol: 0.32 },
-      { f: 329.63, type: 'sine',     vol: 0.30 },
-      { f: 440,    type: 'sine',     vol: 0.22 }
+      { f: 440.00,  type: 'sine',     vol: 0.35 },
+      { f: 523.25,  type: 'sine',     vol: 0.40 },
+      { f: 659.25,  type: 'sine',     vol: 0.32 },
+      { f: 880.00,  type: 'triangle', vol: 0.22 },
+      { f: 1046.50, type: 'sine',     vol: 0.14 }
     ];
     for (var i = 0; i < freqs.length; i++) {
       var fd = freqs[i];
-      var osc = audioCtx.createOscillator();
+      var osc = c.createOscillator();
       osc.type = fd.type;
       osc.frequency.value = fd.f;
-      osc.detune.value = (Math.random() - 0.5) * 8;
+      osc.detune.value = (Math.random() - 0.5) * 10;
 
-      var g = audioCtx.createGain();
+      var g = c.createGain();
       g.gain.value = fd.vol;
 
-      var lfo = audioCtx.createOscillator();
+      var lfo = c.createOscillator();
       lfo.type = 'sine';
-      lfo.frequency.value = 0.04 + Math.random() * 0.08;
-      var lfoG = audioCtx.createGain();
+      lfo.frequency.value = 0.05 + Math.random() * 0.1;
+      var lfoG = c.createGain();
       lfoG.gain.value = fd.vol * 0.4;
       lfo.connect(lfoG);
       lfoG.connect(g.gain);
@@ -436,13 +460,17 @@ function startMusic() {
       musicNodes.push(osc, lfo);
     }
     musicStarted = true;
-    setTimeout(scheduleMelody, 4000);
+    setTimeout(scheduleMelody, 3500);
+    setTimeout(function() { playTone(880, 0.15, 'sine', 0.2); }, 100);
+    setTimeout(function() { playTone(1174.66, 0.2, 'sine', 0.16); }, 250);
   } catch(e) { musicGain = null; }
 }
 
+function startMusic() { doStartMusic(); }
+
 function scheduleMelody() {
   if (!soundOn || !musicGain || !audioCtx) return;
-  var notes = [440, 523.25, 587.33, 659.25, 783.99];
+  var notes = [659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
   var note = notes[Math.floor(Math.random() * notes.length)];
   var dur = 2 + Math.random() * 2;
   try {
@@ -450,15 +478,15 @@ function scheduleMelody() {
     osc.type = 'sine';
     osc.frequency.value = note;
     var g = audioCtx.createGain();
-    g.gain.value = 0.001;
-    g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 0.3);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 0.3);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
     osc.connect(g);
     g.connect(musicGain);
     osc.start();
     osc.stop(audioCtx.currentTime + dur + 0.1);
   } catch(e) {}
-  setTimeout(scheduleMelody, 7000 + Math.random() * 11000);
+  setTimeout(scheduleMelody, 5000 + Math.random() * 8000);
 }
 
 function stopMusic() {
@@ -466,7 +494,7 @@ function stopMusic() {
   try {
     musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
     musicGain.gain.setValueAtTime(musicGain.gain.value, audioCtx.currentTime);
-    musicGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+    musicGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
   } catch(e) {}
   var nodes = musicNodes; musicNodes = [];
   var gainRef = musicGain; musicGain = null;
@@ -492,18 +520,21 @@ function toggleSound() {
   soundOn = !soundOn;
   try { localStorage.setItem('youaura_sound', soundOn ? 'on' : 'off'); } catch(e) {}
   updateSoundIcon();
-  if (soundOn) { initAudio(); startMusic(); soundPop(); }
+  if (soundOn) { unlockAudio(); doStartMusic(); soundPop(); }
   else { stopMusic(); }
   haptic('light');
 }
 
 function tryEnableAudio() {
-  initAudio();
-  startMusic();
+  unlockAudio();
+  if (audioUnlocked && !musicGain) doStartMusic();
 }
 document.addEventListener('touchstart', tryEnableAudio, {passive: true});
 document.addEventListener('click', tryEnableAudio);
 document.addEventListener('pointerdown', tryEnableAudio);
+document.addEventListener('keydown', tryEnableAudio);
+setTimeout(tryEnableAudio, 500);
+if (tg) { try { tg.onEvent('viewportChanged', tryEnableAudio); } catch(e) {} }
 
 function askConfirm(text, onYes) {
   if (tg && tg.showConfirm) {
@@ -598,7 +629,6 @@ document.getElementById('pvRead').textContent = readings;
 document.getElementById('pn').textContent = userName;
 updateSoundIcon();
 
-/* Корректировка баланса на pending */
 var pendingArr = loadPending();
 if (pendingArr.length > 0) {
   balance = Math.max(0, balance - pendingArr.length);
@@ -910,7 +940,6 @@ function drawCards() {
   state.question = (rawQ || 'без вопроса').replace(/\|/g, ' ');
   state.drawn = true;
 
-  /* ЛОКАЛЬНОЕ СПИСАНИЕ + PENDING */
   balance = Math.max(0, balance - 1);
   document.getElementById('hBal').textContent = '🎟 ' + balance;
   document.getElementById('pvFree').textContent = balance;
