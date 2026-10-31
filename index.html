@@ -8,52 +8,95 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #08080f; color: #fff; overflow: hidden; }
-body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
-.app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 16px; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 
-/* ===== HEADER / LOGO ===== */
+/* ===== КОСМИЧЕСКИЙ ФОН ===== */
+body {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(106,77,255,0.25) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(255,127,80,0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 40%, #14143a 0%, #08080f 75%);
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 42% 18%, #fff, transparent),
+    radial-gradient(2px 2px at 68% 34%, #d4c4ff, transparent),
+    radial-gradient(1px 1px at 82% 12%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 22% 68%, #fff, transparent),
+    radial-gradient(1px 1px at 55% 78%, #d4c4ff, transparent),
+    radial-gradient(2px 2px at 78% 62%, #fff, transparent),
+    radial-gradient(1px 1px at 92% 88%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 8% 90%, #fff, transparent),
+    radial-gradient(1px 1px at 36% 45%, #fff, transparent),
+    radial-gradient(1px 1px at 62% 52%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 12% 55%, #d4c4ff, transparent),
+    radial-gradient(1px 1px at 88% 40%, #fff, transparent),
+    radial-gradient(2px 2px at 30% 88%, #fff, transparent);
+  opacity: 0.85;
+  animation: twinkle 4s ease-in-out infinite;
+}
+@keyframes twinkle { 0%,100%{opacity:0.85;} 50%{opacity:0.45;} }
+
+.app {
+  height: 100vh; height: 100dvh;
+  display: flex; flex-direction: column;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== HEADER ===== */
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.logo { display: flex; align-items: center; gap: 11px; font-size: 16px; font-weight: 800; }
+.logo { display: flex; align-items: center; }
+
+/* ЛОГОТИП — ПОЛУМЕСЯЦ + ЗВЁЗДЫ */
 .logo-icon {
+  width: 42px; height: 42px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-icon .moon {
   width: 34px; height: 34px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #ffd89b 0%, #ffb347 35%, #ff7f50 75%, #c94a2e 100%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 17px; font-weight: 900; color: #08080f;
-  box-shadow:
-    0 0 12px rgba(255,179,71,0.8),
-    0 0 24px rgba(255,179,71,0.5),
-    0 0 40px rgba(255,127,80,0.3),
-    inset 0 1px 3px rgba(255,255,255,0.55),
-    inset 0 -2px 4px rgba(0,0,0,0.3);
-  animation: auraGlow 4s ease-in-out infinite;
-  flex-shrink: 0;
+  position: relative;
+  background: radial-gradient(circle at 32% 32%, #efe6ff 0%, #a78bfa 45%, #6d28d9 100%);
+  box-shadow: 0 0 16px rgba(139,92,246,0.7), 0 0 32px rgba(139,92,246,0.4);
+  animation: moonPulse 4s ease-in-out infinite;
 }
-@keyframes auraGlow {
-  0%, 100% {
-    box-shadow:
-      0 0 12px rgba(255,179,71,0.8),
-      0 0 24px rgba(255,179,71,0.5),
-      0 0 40px rgba(255,127,80,0.3),
-      inset 0 1px 3px rgba(255,255,255,0.55),
-      inset 0 -2px 4px rgba(0,0,0,0.3);
-  }
-  50% {
-    box-shadow:
-      0 0 18px rgba(255,179,71,0.95),
-      0 0 36px rgba(255,179,71,0.65),
-      0 0 60px rgba(255,127,80,0.45),
-      inset 0 1px 3px rgba(255,255,255,0.55),
-      inset 0 -2px 4px rgba(0,0,0,0.3);
-  }
+.logo-icon .moon::after {
+  content: '';
+  position: absolute;
+  top: -4px; right: -5px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #14143a 0%, #08080f 100%);
 }
-.logo-text {
-  font-size: 18px; font-weight: 900;
-  letter-spacing: -0.3px;
-  background: linear-gradient(135deg, #ffffff 0%, #ffd89b 55%, #ffb347 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.logo-icon .star1, .logo-icon .star2 {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 4px #fff, 0 0 8px #a78bfa;
+}
+.logo-icon .star1 {
+  width: 3px; height: 3px;
+  top: 4px; right: 1px;
+  animation: twinkle 2.5s infinite;
+}
+.logo-icon .star2 {
+  width: 2px; height: 2px;
+  bottom: 8px; left: 2px;
+  animation: twinkle 3s infinite 0.5s;
+}
+@keyframes moonPulse {
+  0%,100% { box-shadow: 0 0 16px rgba(139,92,246,0.7), 0 0 32px rgba(139,92,246,0.4); }
+  50% { box-shadow: 0 0 22px rgba(139,92,246,0.95), 0 0 44px rgba(139,92,246,0.6); }
 }
 
 .balance { display: flex; gap: 6px; }
@@ -81,15 +124,39 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
 .screen { display: none; }
 .screen.active { display: block; animation: fadeIn 0.35s; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== КАРТЫ С КОСМИЧЕСКОЙ АНИМАЦИЕЙ ===== */
 .cards-row { display: flex; justify-content: center; gap: 6px; margin: 14px 0; flex-wrap: wrap; perspective: 1000px; }
-.card { width: 72px; height: 120px; position: relative; transform-style: preserve-3d; transition: transform 0.8s; }
-.card.flipped { transform: rotateY(180deg); }
+.card { width: 72px; height: 120px; position: relative; transform-style: preserve-3d; }
+.card.flipped {
+  animation: flipAndFloat 0.8s ease-out forwards, floatAfter 3.2s ease-in-out 0.8s infinite;
+}
+.card.flipped .card-front {
+  animation: cardGlow 3.2s ease-in-out 0.8s infinite;
+}
+@keyframes flipAndFloat {
+  from { transform: rotateY(0deg) translateY(0); }
+  to { transform: rotateY(180deg) translateY(0); }
+}
+@keyframes floatAfter {
+  0%,100% { transform: rotateY(180deg) translateY(0); }
+  50% { transform: rotateY(180deg) translateY(-7px); }
+}
+@keyframes cardGlow {
+  0%,100% {
+    box-shadow: 0 0 0 rgba(255,179,71,0), 0 0 0 rgba(139,92,246,0);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255,179,71,0.5), 0 0 36px rgba(139,92,246,0.4);
+  }
+}
 .card-face { position: absolute; inset: 0; border-radius: 10px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 4px; text-align: center; }
 .card-back { background: linear-gradient(135deg, #1a1a3e, #0f0f28); border: 2px solid rgba(255,179,71,0.35); font-size: 30px; color: rgba(255,179,71,0.6); }
-.card-front { transform: rotateY(180deg); background: #1e1e3f; border: 2px solid rgba(255,179,71,0.7); padding: 0; overflow: hidden; position: relative; }
+.card-front { transform: rotateY(180deg); background: #1e1e3f; border: 2px solid rgba(255,179,71,0.7); padding: 0; overflow: hidden; position: relative; border-radius: 10px; }
 .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .card-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 4px; }
 .card-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 2px 2px; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.9)); color: #ffb347; font-size: 7px; font-weight: 800; text-align: center; text-transform: uppercase; line-height: 1.1; }
+
 .big-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffb347, #ff7f50); border: none; border-radius: 16px; color: #08080f; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; font-family: inherit; box-shadow: 0 8px 30px rgba(255,127,80,0.35); }
 .big-btn:active { transform: scale(0.97); }
 .big-btn:disabled { opacity: 0.4; }
@@ -110,7 +177,7 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, #ffb347, #ff7f50); color: #08080f; padding: 12px 22px; border-radius: 100px; font-weight: 800; font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 99; pointer-events: none; max-width: 90%; text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .daily-box { text-align: center; padding: 24px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,179,71,0.25); border-radius: 20px; margin-top: 16px; }
-.daily-img { width: 150px; height: 250px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,179,71,0.7); margin-bottom: 14px; box-shadow: 0 12px 40px rgba(255,179,71,0.4); }
+.daily-img { width: 150px; height: 250px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,179,71,0.7); margin-bottom: 14px; box-shadow: 0 12px 40px rgba(255,179,71,0.4), 0 0 60px rgba(139,92,246,0.3); }
 .daily-name { font-size: 22px; font-weight: 900; color: #ffb347; margin-bottom: 6px; }
 .daily-meaning { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
 .profile-card { padding: 24px 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; text-align: center; margin-top: 12px; }
@@ -136,14 +203,24 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
 /* ===== SUPPORT ===== */
 .support-hint { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.5; margin-bottom: 4px; }
 .support-counter { text-align: right; font-size: 11px; color: rgba(255,255,255,0.35); margin-top: -6px; margin-bottom: 12px; font-weight: 600; }
+
+/* ===== SUCCESS OVERLAY ===== */
+.success-overlay { position: fixed; inset: 0; background: rgba(8,8,15,0.96); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.25s; }
+.success-icon { font-size: 76px; margin-bottom: 22px; animation: popIn 0.5s ease-out; }
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+.success-text { font-size: 22px; font-weight: 900; color: #ffb347; margin-bottom: 8px; letter-spacing: -0.5px; }
+.success-sub { font-size: 13px; color: rgba(255,255,255,0.55); }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
     <div class="logo">
-      <div class="logo-icon">Y</div>
-      <div class="logo-text">YouAura</div>
+      <div class="logo-icon">
+        <div class="moon"></div>
+        <div class="star1"></div>
+        <div class="star2"></div>
+      </div>
     </div>
     <div class="balance">
       <div class="bal-item" id="hBal">0</div>
@@ -394,7 +471,7 @@ var CARDS = [
   {n:'Семёрка Мечей', m:'Хитрость, стратегия. Действуй умно.', img:RWS+'Swords07.jpg'},
   {n:'Восьмёрка Мечей', m:'Ограничения, страх. Ты не так уж заперт.', img:RWS+'Swords08.jpg'},
   {n:'Девятка Мечей', m:'Тревога, отчаяние. Страх больше реальности.', img:RWS+'Swords09.jpg'},
-  {n:'Десятка Мечей', m:'Конец, дно. Хуже уже не будет — иди вверх.', img:RWS+'Swords10.jpg'},
+  {n:'Десятка Мечей', m:'Конец, дно. Хуже уже не будет - иди вверх.', img:RWS+'Swords10.jpg'},
   {n:'Паж Мечей', m:'Любопытство, ум. Задавай вопросы.', img:RWS+'Swords11.jpg'},
   {n:'Рыцарь Мечей', m:'Решимость, атака. Действуй быстро и точно.', img:RWS+'Swords12.jpg'},
   {n:'Королева Мечей', m:'Ясность, независимость. Говори прямо.', img:RWS+'Swords13.jpg'},
@@ -425,7 +502,6 @@ var POSITIONS = {
 
 var state = { count: 0, cards: [], title: '', question: '', drawn: false };
 
-/* ===== NAV ===== */
 function go(id) {
   var screens = document.querySelectorAll('.screen');
   for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
@@ -441,7 +517,6 @@ function showToast(msg) {
   setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 
-/* ===== READING ===== */
 function startReading(count, title) {
   if (balance < 1) {
     showToast('Нет раскладов. Активируй код в боте.');
@@ -572,7 +647,6 @@ function finishReading() {
   }
 }
 
-/* ===== HISTORY ===== */
 function loadHistory() {
   try {
     var raw = localStorage.getItem(HIST_KEY);
@@ -604,7 +678,7 @@ function renderHistory() {
   var area = document.getElementById('histArea');
 
   if (!arr.length) {
-    area.innerHTML = '<div class="hist-empty">Пока нет раскладов.<br>Сделай первый — он появится здесь.</div>';
+    area.innerHTML = '<div class="hist-empty">Пока нет раскладов.<br>Сделай первый - он появится здесь.</div>';
     return;
   }
 
@@ -644,7 +718,6 @@ function clearHistory() {
   showToast('История очищена');
 }
 
-/* ===== SUPPORT ===== */
 function openSupportScreen() {
   document.getElementById('supportText').value = '';
   document.getElementById('supLen').textContent = '0';
@@ -664,19 +737,27 @@ function sendSupport() {
   }
   text = text.replace(/\|/g, ' ').replace(/\n+/g, ' ').substring(0, 500);
 
-  if (tg && tg.sendData) {
-    try {
-      tg.sendData('support|' + text);
-      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
-    } catch(e) {
-      showToast('Ошибка: ' + e.message);
+  var ov = document.createElement('div');
+  ov.className = 'success-overlay';
+  ov.innerHTML = '<div class="success-icon">✅</div><div class="success-text">Отправлено</div><div class="success-sub">Возвращаемся в бот...</div>';
+  document.body.appendChild(ov);
+
+  setTimeout(function() {
+    if (tg && tg.sendData) {
+      try {
+        tg.sendData('support|' + text);
+        setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
+      } catch(e) {
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+        showToast('Ошибка: ' + e.message);
+      }
+    } else {
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      showToast('Открой из Telegram');
     }
-  } else {
-    showToast('Открой из Telegram');
-  }
+  }, 1200);
 }
 
-/* ===== BOT ===== */
 function backToBot() {
   if (tg && tg.sendData) {
     try {
@@ -688,7 +769,6 @@ function backToBot() {
   }
 }
 
-/* ===== DAILY ===== */
 function drawDaily() {
   var card = CARDS[Math.floor(Math.random() * CARDS.length)];
   var html = '<img class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
