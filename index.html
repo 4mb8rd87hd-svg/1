@@ -23,8 +23,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 @keyframes moonPulse { 0%,100%{box-shadow:0 0 16px rgba(139,92,246,0.7), 0 0 32px rgba(139,92,246,0.4);} 50%{box-shadow:0 0 22px rgba(139,92,246,0.95), 0 0 44px rgba(139,92,246,0.6);} }
 .balance { display:flex; gap:6px; align-items:center; }
 .bal-item { padding:6px 10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:100px; font-size:12px; font-weight:700; }
-.sound-toggle { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:15px; cursor:pointer; flex-shrink:0; }
-.sound-toggle:active { transform:scale(0.9); background:rgba(255,179,71,0.15); }
 .content { flex:1; overflow-y:auto; padding-bottom:20px; }
 .content::-webkit-scrollbar { display:none; }
 .greeting { font-size:28px; font-weight:900; letter-spacing:-1px; line-height:1.1; margin:16px 0 4px; }
@@ -73,8 +71,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .act-row { display:flex; gap:8px; margin-top:8px; }
 .act-secondary { flex:1; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
 .act-secondary:active { transform:scale(0.97); background:rgba(255,255,255,0.12); }
-.act-save { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.35); color:#4ade80; }
-.act-save:active { background:rgba(74,222,128,0.2); }
 .vote-wrap { margin-top:14px; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; }
 .vote-title { font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:10px; font-weight:700; text-align:center; }
 .vote-row { display:flex; gap:6px; }
@@ -149,6 +145,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .hist-clear:active { transform:scale(0.97); }
 .hist-repeat { width:100%; padding:10px; background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.35); border-radius:10px; color:#a78bfa; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:6px; }
 .hist-repeat:active { transform:scale(0.97); background:rgba(167,139,250,0.2); }
+.hist-note { font-size:11px; color:rgba(255,255,255,0.4); text-align:center; margin-bottom:10px; padding:8px; background:rgba(255,255,255,0.03); border-radius:10px; line-height:1.4; }
 .task-card { padding:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; margin-bottom:12px; }
 .task-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
 .task-icon { font-size:20px; }
@@ -195,7 +192,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="balance">
       <div class="bal-item" id="hBal">🎟 0</div>
       <div class="bal-item" id="hAcc">🔍 0</div>
-      <div class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</div>
     </div>
   </div>
 
@@ -219,7 +215,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <button class="btn" onclick="go('s-spread')"><div class="btn-icon">🔮</div><div class="btn-info"><div class="btn-title">Сделать расклад</div><div class="btn-desc">5 видов · 78 карт</div></div></button>
       <button class="btn" onclick="drawDaily()"><div class="btn-icon">🌅</div><div class="btn-info"><div class="btn-title">Карта дня</div><div class="btn-desc">Прогноз на сегодня</div></div></button>
       <button class="btn" onclick="go('s-profile')"><div class="btn-icon">👤</div><div class="btn-info"><div class="btn-title">Мой профиль</div><div class="btn-desc">Баланс, уровень, достижения</div></div></button>
-      <button class="btn" onclick="openHistory()"><div class="btn-icon">📜</div><div class="btn-info"><div class="btn-title">История</div><div class="btn-desc">Прошлые расклады</div></div></button>
+      <button class="btn" onclick="openHistory()"><div class="btn-icon">📜</div><div class="btn-info"><div class="btn-title">История</div><div class="btn-desc">Последние 5 раскладов</div></div></button>
       <button class="btn tasks" onclick="go('s-tasks')"><div class="btn-icon">🎁</div><div class="btn-info"><div class="btn-title">Задания</div><div class="btn-desc">Бонусы, реферал, промокоды</div></div></button>
       <button class="btn support" onclick="openSupportScreen()"><div class="btn-icon">✉️</div><div class="btn-info"><div class="btn-title">Поддержка</div><div class="btn-desc">Написать админу</div></div></button>
       <button class="btn back" onclick="backToBot()"><div class="btn-icon">⬅️</div><div class="btn-info"><div class="btn-title">Вернуться в бот</div><div class="btn-desc">Закрыть приложение</div></div></button>
@@ -346,10 +342,10 @@ function getUserId() {
 }
 var HIST_KEY = 'youaura_hist_v1_' + getUserId();
 var PENDING_KEY = 'youaura_pending_v1_' + getUserId();
+var HIST_MAX = 5;
 
-/* ===== АУДИО + МУЗЫКА ===== */
+/* ===== АУДИО + МУЗЫКА (всегда включены) ===== */
 var soundOn = true;
-try { soundOn = localStorage.getItem('youaura_sound') !== 'off'; } catch(e) {}
 var audioCtx = null;
 var musicGain = null;
 var musicNodes = [];
@@ -374,19 +370,18 @@ function unlockAudio() {
     if (p && p.then) {
       p.then(function() {
         audioUnlocked = true;
-        if (soundOn && !musicGain) doStartMusic();
+        if (!musicGain) doStartMusic();
       }).catch(function(){});
     } else {
       audioUnlocked = true;
     }
   } else {
     audioUnlocked = true;
-    if (soundOn && !musicGain) doStartMusic();
+    if (!musicGain) doStartMusic();
   }
 }
 
 function playTone(freq, dur, type, vol) {
-  if (!soundOn) return;
   var c = createCtx();
   if (!c) return;
   if (c.state === 'suspended') {
@@ -409,7 +404,6 @@ function soundError() { playTone(300, 0.15, 'sine', 0.15); setTimeout(function()
 function soundPop() { playTone(900, 0.05, 'sine', 0.12); }
 
 function doStartMusic() {
-  if (!soundOn) return;
   var c = createCtx();
   if (!c || musicGain) return;
   if (c.state === 'suspended') {
@@ -469,7 +463,7 @@ function doStartMusic() {
 function startMusic() { doStartMusic(); }
 
 function scheduleMelody() {
-  if (!soundOn || !musicGain || !audioCtx) return;
+  if (!musicGain || !audioCtx) return;
   var notes = [659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
   var note = notes[Math.floor(Math.random() * notes.length)];
   var dur = 2 + Math.random() * 2;
@@ -489,21 +483,6 @@ function scheduleMelody() {
   setTimeout(scheduleMelody, 5000 + Math.random() * 8000);
 }
 
-function stopMusic() {
-  if (!audioCtx || !musicGain) { musicNodes = []; musicGain = null; return; }
-  try {
-    musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    musicGain.gain.setValueAtTime(musicGain.gain.value, audioCtx.currentTime);
-    musicGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
-  } catch(e) {}
-  var nodes = musicNodes; musicNodes = [];
-  var gainRef = musicGain; musicGain = null;
-  setTimeout(function() {
-    for (var i = 0; i < nodes.length; i++) { try { nodes[i].stop(); } catch(e) {} }
-    try { gainRef.disconnect(); } catch(e) {}
-  }, 500);
-}
-
 function haptic(t) {
   if (tg && tg.HapticFeedback) { try {
     if (t === 'light') tg.HapticFeedback.impactOccurred('light');
@@ -511,18 +490,6 @@ function haptic(t) {
     else if (t === 'success') tg.HapticFeedback.notificationOccurred('success');
     else if (t === 'error') tg.HapticFeedback.notificationOccurred('error');
   } catch(e) {} }
-}
-function updateSoundIcon() {
-  var el = document.getElementById('soundToggle');
-  if (el) el.textContent = soundOn ? '🔊' : '🔇';
-}
-function toggleSound() {
-  soundOn = !soundOn;
-  try { localStorage.setItem('youaura_sound', soundOn ? 'on' : 'off'); } catch(e) {}
-  updateSoundIcon();
-  if (soundOn) { unlockAudio(); doStartMusic(); soundPop(); }
-  else { stopMusic(); }
-  haptic('light');
 }
 
 function tryEnableAudio() {
@@ -627,7 +594,6 @@ document.getElementById('pvFree').textContent = balance;
 document.getElementById('pvAcc').textContent = access;
 document.getElementById('pvRead').textContent = readings;
 document.getElementById('pn').textContent = userName;
-updateSoundIcon();
 
 var pendingArr = loadPending();
 if (pendingArr.length > 0) {
@@ -1067,8 +1033,12 @@ function loadHistory() {
   catch(e) { return []; }
 }
 function saveHistoryEntry(e) {
-  try { var a = loadHistory(); a.unshift(e); if (a.length > 50) a = a.slice(0, 50); localStorage.setItem(HIST_KEY, JSON.stringify(a)); }
-  catch(err) {}
+  try {
+    var a = loadHistory();
+    a.unshift(e);
+    if (a.length > HIST_MAX) a = a.slice(0, HIST_MAX);
+    localStorage.setItem(HIST_KEY, JSON.stringify(a));
+  } catch(err) {}
 }
 function getUnsyncedCounts() {
   var arr = loadHistory();
@@ -1108,6 +1078,7 @@ function renderHistory() {
     return;
   }
   var html = topHtml;
+  html += '<div class="hist-note">Показаны последние ' + HIST_MAX + ' раскладов.<br>Полная статистика — в профиле.</div>';
   for (var i = 0; i < arr.length; i++) {
     var h = arr[i]; var d = new Date(h.ts || 0);
     var ds = pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
