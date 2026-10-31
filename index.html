@@ -45,7 +45,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .btn.tasks .btn-icon { background:rgba(255,179,71,0.15); border-color:rgba(255,179,71,0.3); }
 .btn.back { background:rgba(255,127,80,0.08); border-color:rgba(255,127,80,0.3); }
 .btn.back .btn-icon { background:rgba(255,127,80,0.15); border-color:rgba(255,127,80,0.3); }
-/* FIX: .spread-btn — исправлены опечатки 14pxow, 8 px, rgba(3255), solid. */
+.btn.share .btn-icon { background:rgba(74,222,128,0.15); border-color:rgba(74,222,128,0.3); }
 .spread-btn { width:100%; padding:14px 16px; margin-bottom:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; color:#fff; text-align:left; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:10px; }
 .spread-btn:active { transform:scale(0.98); background:rgba(255,127,80,0.1); border-color:rgba(255,179,71,0.5); }
 .spread-num { width:30px; height:30px; line-height:30px; text-align:center; background:linear-gradient(135deg, #ffb347, #ff7f50); border-radius:9px; font-weight:900; color:#08080f; flex-shrink:0; font-size:14px; }
@@ -140,6 +140,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .hist-empty { text-align:center; padding:60px 20px; color:rgba(255,255,255,0.4); font-size:14px; line-height:1.6; }
 .hist-clear { width:100%; padding:12px; background:rgba(255,127,80,0.08); border:1px solid rgba(255,127,80,0.3); border-radius:12px; color:#ff7f50; font-weight:700; cursor:pointer; margin-top:16px; font-family:inherit; font-size:13px; }
 .hist-clear:active { transform:scale(0.97); }
+.hist-repeat { width:100%; padding:10px; background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.35); border-radius:10px; color:#a78bfa; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:6px; }
+.hist-repeat:active { transform:scale(0.97); background:rgba(167,139,250,0.2); }
 .task-card { padding:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; margin-bottom:12px; }
 .task-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
 .task-icon { font-size:20px; }
@@ -206,6 +208,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <button class="btn" onclick="openHistory()"><div class="btn-icon">📜</div><div class="btn-info"><div class="btn-title">История</div><div class="btn-desc">Прошлые расклады</div></div></button>
       <button class="btn tasks" onclick="go('s-tasks')"><div class="btn-icon">🎁</div><div class="btn-info"><div class="btn-title">Задания</div><div class="btn-desc">Бонусы, реферал, промокоды</div></div></button>
       <button class="btn support" onclick="openSupportScreen()"><div class="btn-icon">✉️</div><div class="btn-info"><div class="btn-title">Поддержка</div><div class="btn-desc">Написать админу</div></div></button>
+      <button class="btn share" onclick="shareBot()"><div class="btn-icon">📤</div><div class="btn-info"><div class="btn-title">Поделиться ботом</div><div class="btn-desc">Расскажи друзьям</div></div></button>
       <button class="btn back" onclick="backToBot()"><div class="btn-icon">⬅️</div><div class="btn-info"><div class="btn-title">Вернуться в бот</div><div class="btn-desc">Закрыть приложение</div></div></button>
     </div>
 
@@ -300,7 +303,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 var tg = window.Telegram ? window.Telegram.WebApp : null;
-if (tg) { try { tg.ready(); tg.expand(); } catch(e) {} }
+if (tg) {
+  try { tg.ready(); tg.expand(); } catch(e) {}
+  // FIX: цвет шапки под цвет фона аппа
+  try { if (tg.setHeaderColor) tg.setHeaderColor('#08080f'); } catch(e) {}
+}
 
 var params = new URLSearchParams(window.location.search);
 var balance = parseInt(params.get('bal') || '0');
@@ -358,28 +365,22 @@ function soundSuccess() { playTone(523, 0.1, 'sine', 0.1); setTimeout(function()
 function soundError() { playTone(220, 0.15, 'sine', 0.1); setTimeout(function(){ playTone(165, 0.2, 'sine', 0.1); }, 100); }
 function soundPop() { playTone(700, 0.05, 'sine', 0.08); }
 
-/* MUSIC: генеративный эмбиент (Am-аккорд + LFO-пульсация).
-   Не требует mp3, работает офлайн, ~0 КБ. */
 function startMusic() {
   if (!soundOn) return;
   initAudio();
   if (!audioCtx) return;
   if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch(e) {} }
-  if (musicGain) return; // уже играет
-
+  if (musicGain) return;
   try {
     musicGain = audioCtx.createGain();
     musicGain.gain.value = 0.001;
     musicGain.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 2.5);
     musicGain.connect(audioCtx.destination);
-
     var filter = audioCtx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 550;
     filter.Q.value = 0.7;
     filter.connect(musicGain);
-
-    // Аккорд Am: A1=55, E2=82.5, A2=110, C3=130.81, E3=164.81
     var freqs = [55, 82.5, 110, 130.81, 164.81];
     for (var i = 0; i < freqs.length; i++) {
       var f = freqs[i];
@@ -387,11 +388,8 @@ function startMusic() {
       osc.type = 'sine';
       osc.frequency.value = f;
       osc.detune.value = (Math.random() - 0.5) * 6;
-
       var g = audioCtx.createGain();
       g.gain.value = 0.22 / (1 + i * 0.6);
-
-      // Медленная пульсация громкости
       var lfo = audioCtx.createOscillator();
       lfo.type = 'sine';
       lfo.frequency.value = 0.04 + Math.random() * 0.08;
@@ -399,7 +397,6 @@ function startMusic() {
       lfoG.gain.value = 0.10 / (1 + i * 0.6);
       lfo.connect(lfoG);
       lfoG.connect(g.gain);
-
       osc.connect(g);
       g.connect(filter);
       osc.start();
@@ -422,7 +419,6 @@ function stopMusic() {
     try { gainRef.disconnect(); } catch(e) {}
   }, 500);
 }
-
 function haptic(t) {
   if (tg && tg.HapticFeedback) { try {
     if (t === 'light') tg.HapticFeedback.impactOccurred('light');
@@ -443,7 +439,6 @@ function toggleSound() {
   else { stopMusic(); }
   haptic('light');
 }
-// Первый тап/клик = user gesture → стартуем аудио и музыку
 document.body.addEventListener('touchstart', function onT() {
   initAudio(); startMusic();
   document.body.removeEventListener('touchstart', onT);
@@ -453,7 +448,6 @@ document.body.addEventListener('click', function onC() {
   document.body.removeEventListener('click', onC);
 }, {once: true});
 
-/* FIX: универсальный confirm через tg.showConfirm, fallback на confirm() */
 function askConfirm(text, onYes) {
   if (tg && tg.showConfirm) {
     try { tg.showConfirm(text, function(ok) { if (ok) onYes(); }); return; } catch(e) {}
@@ -471,17 +465,20 @@ document.getElementById('pvRead').textContent = readings;
 document.getElementById('pn').textContent = userName;
 updateSoundIcon();
 
+// FIX: fallback аватара — 🌙 если нет имени/фото
 (function applyAvatar() {
   var avEl = document.getElementById('av');
   var url = (tgUser && tgUser.photo_url) ? tgUser.photo_url : '';
-  if (!url) { if (userName.length > 0) avEl.textContent = userName.charAt(0).toUpperCase(); return; }
+  if (!url) {
+    avEl.textContent = userName.length > 0 ? userName.charAt(0).toUpperCase() : '🌙';
+    return;
+  }
   var img = new Image();
   img.onload = function() { avEl.innerHTML = '<img src="' + url + '" alt="" class="av-img">'; };
-  img.onerror = function() { if (userName.length > 0) avEl.textContent = userName.charAt(0).toUpperCase(); };
+  img.onerror = function() { avEl.textContent = userName.length > 0 ? userName.charAt(0).toUpperCase() : '🌙'; };
   img.src = url;
 })();
 
-// FIX: баннер учитывает access
 if (balance < 1 && access < 1) {
   var nb = document.getElementById('noKeysBanner');
   if (nb) nb.style.display = 'block';
@@ -644,7 +641,14 @@ var POSITIONS = {
   7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Совет', 'Итог'],
   10: ['Суть', 'Препятствие', 'Основа', 'Прошлое', 'Цель', 'Будущее', 'Вы', 'Окружение', 'Надежды и страхи', 'Итог']
 };
-var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false, canSave: false, canFull: false };
+
+// FIX: предзагрузка топ-10 карт для мгновенного первого расклада
+(function preloadPopular() {
+  var popular = ['RWS_Tarot_00_Fool.jpg','RWS_Tarot_01_Magician.jpg','RWS_Tarot_02_High_Priestess.jpg','RWS_Tarot_03_Empress.jpg','RWS_Tarot_04_Emperor.jpg','RWS_Tarot_06_Lovers.jpg','RWS_Tarot_10_Wheel_of_Fortune.jpg','RWS_Tarot_13_Death.jpg','RWS_Tarot_17_Star.jpg','RWS_Tarot_19_Sun.jpg'];
+  for (var i = 0; i < popular.length; i++) { try { var im = new Image(); im.src = RWS + popular[i]; } catch(e) {} }
+})();
+
+var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false };
 
 function go(id) {
   var s = document.querySelectorAll('.screen');
@@ -688,6 +692,28 @@ function redeemCode() {
   }
 }
 
+// FIX: поделиться ботом
+function shareBot() {
+  if (!botName) { showToast('Ссылка на бота не настроена', true); return; }
+  var link = 'https://t.me/' + botName;
+  var text = '🔮 Задай вопрос — получи ответ. Первые 5 раскладов бесплатно.';
+  var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+  haptic('medium');
+  if (tg && tg.openTelegramLink) { try { tg.openTelegramLink(shareUrl); return; } catch(e) {} }
+  window.open(shareUrl, '_blank');
+}
+// FIX: поделиться результатом расклада
+function shareResult() {
+  if (!state.cards.length) { showToast('Сначала вытяни карты', true); return; }
+  var mainCard = state.cards[0].n;
+  var text = '🃏 Мне выпала карта «' + mainCard + '» в YouAura. А тебе какая?';
+  var link = botName ? ('https://t.me/' + botName) : '';
+  var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+  haptic('medium');
+  if (tg && tg.openTelegramLink) { try { tg.openTelegramLink(shareUrl); return; } catch(e) {} }
+  window.open(shareUrl, '_blank');
+}
+
 function openNoKeysModal() {
   if (document.getElementById('noKeysOverlay')) return;
   soundError(); haptic('error');
@@ -705,13 +731,10 @@ function closeNoKeysModal() {
 function goTasksFromModal() { closeNoKeysModal(); go('s-tasks'); }
 function goSupportFromModal() { closeNoKeysModal(); openSupportScreen(); }
 
-// FIX: startReading пускает при balance >= 1 ИЛИ access >= 1
 function startReading(count, title) {
   if (balance < 1 && access < 1) { openNoKeysModal(); return; }
   state.count = count; state.title = title; state.cards = []; state.question = '';
   state.drawn = false; state.finished = false;
-  state.canSave = balance >= 1;
-  state.canFull = access >= 1;
   document.getElementById('rtitle').textContent = title;
   document.getElementById('carea').innerHTML = '';
   document.getElementById('qinput').value = '';
@@ -746,7 +769,8 @@ function drawCards() {
     var card = CARDS[idx]; state.cards.push(card);
     var el = document.createElement('div');
     el.className = 'card';
-    var front = '<img src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div style="font-size:13px;color:#ffb347;font-weight:800;padding:4px;text-align:center">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
+    // FIX: lazy + async decoding
+    var front = '<img loading="lazy" decoding="async" src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div style="font-size:13px;color:#ffb347;font-weight:800;padding:4px;text-align:center">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
     el.innerHTML = '<div class="card-face card-back">*</div><div class="card-face card-front">' + front + '</div>';
     area.appendChild(el);
     (function(el, delay) { setTimeout(function() { el.classList.add('flipped'); soundFlip(); }, delay); })(el, 400 + i * 150);
@@ -770,7 +794,6 @@ function showInterpretation() {
   interp.innerHTML = html;
   interp.style.display = 'block';
 }
-// FIX: показываем "Сохранить" активной только при balance >= 1
 function showActionButtons() {
   var area = document.getElementById('actionArea');
   var html = '';
@@ -786,11 +809,12 @@ function showActionButtons() {
     saveBtn = '<button class="act-secondary act-save" onclick="showToast(\'Нет раскладов для сохранения — нужен GIFT/WM\', true)" style="opacity:0.5">✅ Сохранить</button>';
   }
   html += '<div class="act-row">' + saveBtn + '<button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button></div>';
+  // FIX: кнопка "Поделиться" результатом
+  html += '<div class="act-row"><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
   area.innerHTML = html;
   area.style.display = 'block';
 }
 
-// FIX: проверка balance
 function finishWithSave() {
   if (state.finished) return;
   if (balance < 1) { showToast('Нет раскладов для сохранения — нужен GIFT/WM', true); return; }
@@ -809,7 +833,6 @@ function finishWithSave() {
   sendAndClose(payload, '✨', 'Расклад сохранён');
 }
 
-// FIX: списывает ТОЛЬКО access
 function finishWithFull() {
   if (state.finished) return;
   if (access < 1) { showToast('Нет разборов', true); return; }
@@ -827,7 +850,6 @@ function finishWithFull() {
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
-// FIX: через askConfirm + сброс state.drawn
 function finishWithAnother() {
   askConfirm('Текущий расклад не сохранён. Сделать новый?', function() {
     soundPop(); haptic('light');
@@ -920,10 +942,26 @@ function renderHistory() {
     } else {
       html += '<div class="hist-fb"><button class="hist-fb-btn yes" onclick="markFb(' + i + ',\'yes\')">✅ Сбылось</button><button class="hist-fb-btn no" onclick="markFb(' + i + ',\'no\')">❌ Нет</button><button class="hist-fb-btn partly" onclick="markFb(' + i + ',\'partly\')">🟡 Частично</button></div>';
     }
+    // FIX: кнопка "Повторить"
+    html += '<button class="hist-repeat" onclick="repeatSpread(' + i + ')">🔁 Повторить расклад</button>';
     html += '</div>';
   }
   html += '<button class="hist-clear" onclick="clearHistory()">Очистить историю</button>';
   area.innerHTML = html;
+}
+// FIX: повтор расклада из истории — сразу открывает форму с тем же count и вопросом
+function repeatSpread(idx) {
+  var arr = loadHistory();
+  if (!arr[idx]) return;
+  var h = arr[idx];
+  if (balance < 1 && access < 1) { openNoKeysModal(); return; }
+  var count = (h.cards && h.cards.length) || 1;
+  var title = h.title || 'Расклад';
+  startReading(count, title);
+  if (h.question && h.question !== 'без вопроса') {
+    var qi = document.getElementById('qinput');
+    if (qi) qi.value = h.question;
+  }
 }
 function markFb(idx, result) {
   try {
@@ -938,8 +976,6 @@ function markFb(idx, result) {
     else { showToast('🟡 Отмечено: частично'); haptic('light'); }
   } catch(e) {}
 }
-
-// FIX: markAllSynced ТОЛЬКО после успешного tg.sendData
 function syncHistory() {
   var unsync = getUnsyncedCounts();
   if (unsync.total === 0) { showToast('Всё синхронизировано'); return; }
@@ -952,7 +988,7 @@ function syncHistory() {
   setTimeout(function() {
     try {
       tg.sendData(payload);
-      markAllSynced(); // помечаем ТОЛЬКО после успешной отправки
+      markAllSynced();
       setTimeout(function(){ try { tg.close(); } catch(e){} }, 100);
     } catch(e) {
       if (ov.parentNode) ov.parentNode.removeChild(ov);
@@ -961,7 +997,6 @@ function syncHistory() {
   }, 900);
 }
 function openHistory() { renderHistory(); go('s-history'); }
-// FIX: через askConfirm
 function clearHistory() {
   askConfirm('Удалить всю историю?', function() {
     try { localStorage.removeItem(HIST_KEY); } catch(e) {}
@@ -994,7 +1029,6 @@ function sendSupport() {
   }, 1000);
 }
 
-// FIX: markAllSynced ТОЛЬКО после успешного tg.sendData
 function backToBot() {
   var unsync = getUnsyncedCounts();
   var payload;
@@ -1016,7 +1050,7 @@ function backToBot() {
 function drawDaily() {
   haptic('medium');
   var card = CARDS[Math.floor(Math.random() * CARDS.length)];
-  var html = '<img class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
+  var html = '<img loading="lazy" decoding="async" class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
   html += '<div class="daily-name">' + card.n + '</div><div class="daily-meaning">' + card.m + '</div>';
   document.getElementById('dbox').innerHTML = html;
   go('s-result');
