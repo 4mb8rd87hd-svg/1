@@ -75,6 +75,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .act-secondary:active { transform:scale(0.97); background:rgba(255,255,255,0.12); }
 .act-save { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.35); color:#4ade80; }
 .act-save:active { background:rgba(74,222,128,0.2); }
+/* ===== ГОЛОСОВАНИЕ ===== */
+.vote-wrap { margin-top:14px; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; }
+.vote-title { font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:10px; font-weight:700; text-align:center; }
+.vote-row { display:flex; gap:6px; }
+.vote-btn { flex:1; padding:12px 6px; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; border:1px solid; }
+.vote-btn.yes { background:rgba(74,222,128,0.15); border-color:rgba(74,222,128,0.4); color:#4ade80; }
+.vote-btn.no { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.4); color:#ef4444; }
+.vote-btn.partly { background:rgba(251,191,36,0.15); border-color:rgba(251,191,36,0.4); color:#fbbf24; }
+.vote-btn:active { transform:scale(0.97); }
+/* ===== /ГОЛОСОВАНИЕ ===== */
 .q-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; font-family:inherit; margin:12px 0; resize:none; }
 .q-input::placeholder { color:rgba(255,255,255,0.35); }
 .q-input:focus { outline:none; border-color:rgba(255,179,71,0.5); }
@@ -369,31 +379,32 @@ function soundSuccess() { playTone(523, 0.1, 'sine', 0.1); setTimeout(function()
 function soundError() { playTone(220, 0.15, 'sine', 0.1); setTimeout(function(){ playTone(165, 0.2, 'sine', 0.1); }, 100); }
 function soundPop() { playTone(700, 0.05, 'sine', 0.08); }
 
-// МУЗЫКА: аккорд Am в СЛЫШИМОМ диапазоне (165-440 Гц) + тихая мелодия
 function startMusic() {
   if (!soundOn) return;
   initAudio();
   if (!audioCtx) return;
+  if (audioCtx.state === 'suspended') {
+    try { audioCtx.resume().catch(function(){}); } catch(e) {}
+  }
   if (musicGain) return;
   try {
     musicGain = audioCtx.createGain();
-    musicGain.gain.value = 0.001;
-    musicGain.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 2.5);
+    musicGain.gain.value = 0.0001;
+    musicGain.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime + 2.0);
     musicGain.connect(audioCtx.destination);
 
     var filter = audioCtx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 2000;
+    filter.frequency.value = 3000;
     filter.Q.value = 0.5;
     filter.connect(musicGain);
 
-    // Am: E3, A3, C4, E4, A4 — хорошо слышно на телефоне
     var freqs = [
-      { f: 164.81, type: 'sine',     vol: 0.22 },
-      { f: 220,    type: 'sine',     vol: 0.28 },
-      { f: 261.63, type: 'triangle', vol: 0.20 },
-      { f: 329.63, type: 'sine',     vol: 0.18 },
-      { f: 440,    type: 'sine',     vol: 0.14 }
+      { f: 164.81, type: 'sine',     vol: 0.35 },
+      { f: 220,    type: 'sine',     vol: 0.40 },
+      { f: 261.63, type: 'triangle', vol: 0.32 },
+      { f: 329.63, type: 'sine',     vol: 0.30 },
+      { f: 440,    type: 'sine',     vol: 0.22 }
     ];
     for (var i = 0; i < freqs.length; i++) {
       var fd = freqs[i];
@@ -481,7 +492,6 @@ function toggleSound() {
   haptic('light');
 }
 
-// Запуск музыки на ЛЮБОЕ взаимодействие (iOS требует gesture)
 function tryEnableAudio() {
   initAudio();
   startMusic();
@@ -508,16 +518,21 @@ document.getElementById('pn').textContent = userName;
 updateSoundIcon();
 
 (function applyAvatar() {
-  var avEl = document.getElementById('av');
-  var url = (tgUser && tgUser.photo_url) ? tgUser.photo_url : '';
-  if (!url) {
-    avEl.textContent = userName.length > 0 ? userName.charAt(0).toUpperCase() : '🌙';
-    return;
-  }
-  var img = new Image();
-  img.onload = function() { avEl.innerHTML = '<img src="' + url + '" alt="" class="av-img">'; };
-  img.onerror = function() { avEl.textContent = userName.length > 0 ? userName.charAt(0).toUpperCase() : '🌙'; };
-  img.src = url;
+  try {
+    var avEl = document.getElementById('av');
+    if (!avEl) return;
+    var initial = (userName && userName.length > 0) ? userName.charAt(0).toUpperCase() : '🌙';
+    avEl.textContent = initial;
+    var url = '';
+    try { if (tgUser && tgUser.photo_url) url = String(tgUser.photo_url); } catch(e) {}
+    if (!url) return;
+    var img = new Image();
+    img.onload = function() {
+      avEl.innerHTML = '<img src="' + url + '" alt="" class="av-img">';
+    };
+    img.onerror = function() { avEl.textContent = initial; };
+    img.src = url;
+  } catch(e) {}
 })();
 
 if (balance < 1 && access < 1) {
@@ -734,6 +749,7 @@ function redeemCode() {
 function shareBot() {
   if (!botName) { showToast('Ссылка на бота не настроена', true); return; }
   var link = 'https://t.me/' + botName;
+  if (myUid) link += '?start=ref_' + myUid;
   var text = '🔮 Задай вопрос — получи ответ. Первые 5 раскладов бесплатно.';
   var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
   haptic('medium');
@@ -745,6 +761,7 @@ function shareResult() {
   var mainCard = state.cards[0].n;
   var text = '🃏 Мне выпала карта «' + mainCard + '» в YouAura. А тебе какая?';
   var link = botName ? ('https://t.me/' + botName) : '';
+  if (myUid && link) link += '?start=ref_' + myUid;
   var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
   haptic('medium');
   if (tg && tg.openTelegramLink) { try { tg.openTelegramLink(shareUrl); return; } catch(e) {} }
@@ -838,21 +855,19 @@ function showActionButtons() {
   } else {
     html += '<button class="act-full" onclick="showToast(\'Нет разборов. Активируй WM-код в Заданиях.\', true)" style="background:linear-gradient(135deg,#4a3a6a,#2a1f5e); box-shadow:none;">🔍 Полный разбор <span class="badge">нужен WM-код</span></button>';
   }
-  var saveBtn;
-  if (balance > 0) {
-    saveBtn = '<button class="act-secondary act-save" onclick="finishWithSave()">✅ Сохранить</button>';
-  } else {
-    saveBtn = '<button class="act-secondary act-save" onclick="showToast(\'Нет раскладов для сохранения — нужен GIFT/WM\', true)" style="opacity:0.5">✅ Сохранить</button>';
-  }
-  html += '<div class="act-row">' + saveBtn + '<button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button></div>';
-  html += '<div class="act-row"><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
+  html += '<div class="vote-wrap"><div class="vote-title">Как тебе расклад?</div><div class="vote-row">';
+  html += '<button class="vote-btn yes" onclick="finishWithVote(\'yes\')">✅ Сбылось</button>';
+  html += '<button class="vote-btn no" onclick="finishWithVote(\'no\')">❌ Нет</button>';
+  html += '<button class="vote-btn partly" onclick="finishWithVote(\'partly\')">🟡 Частично</button>';
+  html += '</div></div>';
+  html += '<div class="act-row"><button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
   area.innerHTML = html;
   area.style.display = 'block';
 }
 
-function finishWithSave() {
+function finishWithVote(fb) {
   if (state.finished) return;
-  if (balance < 1) { showToast('Нет раскладов для сохранения — нужен GIFT/WM', true); return; }
+  if (balance < 1) { showToast('Нет раскладов — нужен GIFT/WM', true); return; }
   state.finished = true;
   var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
@@ -860,12 +875,14 @@ function finishWithSave() {
     cardsStr += state.cards[i].n;
     cardNames.push(state.cards[i].n);
   }
-  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: '', synced: true });
+  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: fb, synced: true });
   balance = Math.max(0, balance - 1);
   document.getElementById('hBal').textContent = '🎟 ' + balance;
   document.getElementById('pvFree').textContent = balance;
-  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
-  sendAndClose(payload, '✨', 'Расклад сохранён');
+  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fb;
+  var icon = fb === 'yes' ? '✅' : (fb === 'no' ? '❌' : '🟡');
+  var text = fb === 'yes' ? 'Сбылось! Спасибо' : (fb === 'no' ? 'Понятно. Учтём' : 'Спасибо за отзыв');
+  sendAndClose(payload, icon, text);
 }
 
 function finishWithFull() {
