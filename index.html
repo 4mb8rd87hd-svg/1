@@ -28,7 +28,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-
 .title { font-size: 22px; font-weight: 900; margin: 8px 0 12px; }
 .screen { display: none; }
 .screen.active { display: block; }
-.cards-area { display: flex; justify-content: center; gap: 8px; margin: 20px 0; flex-wrap: wrap; min-height: 140px; perspective: 1000px; }
+.cards-row { display: flex; justify-content: center; gap: 8px; margin: 16px 0; flex-wrap: wrap; perspective: 1000px; }
 .card { width: 76px; height: 128px; position: relative; transform-style: preserve-3d; transition: transform 0.8s; }
 .card.flipped { transform: rotateY(180deg); }
 .card-face { position: absolute; inset: 0; border-radius: 11px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 6px; text-align: center; }
@@ -36,15 +36,24 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-
 .card-front { transform: rotateY(180deg); background: #1e1e3f; border: 2px solid rgba(255,179,71,0.7); padding: 0; overflow: hidden; position: relative; }
 .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
 .card-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 6px; }
-.card-symbol { font-size: 36px; }
-.card-name { font-size: 9px; font-weight: 800; color: #ffb347; margin-top: 6px; text-transform: uppercase; text-align: center; }
 .card-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 3px 3px; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.9)); color: #ffb347; font-size: 8px; font-weight: 800; text-align: center; text-transform: uppercase; }
 .big-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffb347, #ff7f50); border: none; border-radius: 16px; color: #08080f; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; font-family: inherit; }
 .big-btn:active { transform: scale(0.97); }
 .big-btn:disabled { opacity: 0.4; }
 .q-input { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 14px; font-family: inherit; margin: 12px 0; resize: none; }
 .q-input::placeholder { color: rgba(255,255,255,0.35); }
-.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, #ffb347, #ff7f50); color: #08080f; padding: 12px 22px; border-radius: 100px; font-weight: 800; font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 99; pointer-events: none; }
+.q-locked { padding: 12px 14px; background: rgba(255,179,71,0.08); border: 1px solid rgba(255,179,71,0.3); border-radius: 12px; margin: 12px 0; font-size: 14px; color: #ffb347; font-weight: 600; }
+.q-locked .ql-label { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+.interpretation { margin-top: 20px; }
+.interp-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; color: #ffb347; }
+.interp-item { padding: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; margin-bottom: 8px; }
+.interp-pos { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+.interp-name { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+.interp-meaning { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+.summary-box { padding: 16px; background: rgba(255,179,71,0.08); border: 1px solid rgba(255,179,71,0.35); border-radius: 16px; margin-top: 12px; }
+.summary-title { font-size: 13px; color: #ffb347; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; }
+.summary-text { font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.6; }
+.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, #ffb347, #ff7f50); color: #08080f; padding: 12px 22px; border-radius: 100px; font-weight: 800; font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 99; pointer-events: none; max-width: 90%; text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .daily-box { text-align: center; padding: 24px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,179,71,0.25); border-radius: 20px; margin-top: 16px; }
 .daily-img { width: 140px; height: 235px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,179,71,0.7); margin-bottom: 14px; }
@@ -109,7 +118,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-
       </button>
       <button class="card-btn" onclick="startReading(5,'Крест')">
         <div class="card-num">3</div>
-        <div><div class="btn-title">Крест</div><div class="btn-desc">5 карт</div></div>
+        <div><div class="btn-title">Крест</div><div class="btn-desc">5 карт, глубокий разбор</div></div>
       </button>
       <button class="card-btn" onclick="startReading(7,'Подкова')">
         <div class="card-num">4</div>
@@ -122,11 +131,21 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-
     </div>
 
     <div class="screen" id="s-reading">
+      <button class="back-btn" id="backFromReading" onclick="go('s-spread')">Назад</button>
       <div class="title" id="rtitle">Расклад</div>
-      <textarea class="q-input" id="qinput" placeholder="Твой вопрос (необязательно)" rows="2"></textarea>
-      <div class="cards-area" id="carea"></div>
+      
+      <textarea class="q-input" id="qinput" placeholder="Твой вопрос (необязательно, но лучше с ним)" rows="2"></textarea>
+      <div class="q-locked" id="qlocked" style="display:none">
+        <div class="ql-label">Твой вопрос</div>
+        <div id="qlocked-text">-</div>
+      </div>
+      
+      <div class="cards-row" id="carea"></div>
+      
       <button class="big-btn" id="dbtn" onclick="drawCards()">Вытянуть карты</button>
       <button class="big-btn" id="fbtn" onclick="finishReading()" style="display:none">Отправить в бот</button>
+      
+      <div class="interpretation" id="interp" style="display:none"></div>
     </div>
 
     <div class="screen" id="s-profile">
@@ -173,67 +192,97 @@ if (userName.length > 0) {
 var RWS = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
 
 var CARDS = [
-  {n:'Шут', s:'A', img:RWS+'RWS_Tarot_00_Fool.jpg'},
-  {n:'Маг', s:'B', img:RWS+'RWS_Tarot_01_Magician.jpg'},
-  {n:'Верховная Жрица', s:'C', img:RWS+'RWS_Tarot_02_High_Priestess.jpg'},
-  {n:'Императрица', s:'D', img:RWS+'RWS_Tarot_03_Empress.jpg'},
-  {n:'Император', s:'E', img:RWS+'RWS_Tarot_04_Emperor.jpg'},
-  {n:'Иерофант', s:'F', img:RWS+'RWS_Tarot_05_Hierophant.jpg'},
-  {n:'Влюблённые', s:'G', img:RWS+'RWS_Tarot_06_Lovers.jpg'},
-  {n:'Колесница', s:'H', img:RWS+'RWS_Tarot_07_Chariot.jpg'},
-  {n:'Сила', s:'I', img:RWS+'RWS_Tarot_08_Strength.jpg'},
-  {n:'Отшельник', s:'J', img:RWS+'RWS_Tarot_09_Hermit.jpg'},
-  {n:'Колесо Фортуны', s:'K', img:RWS+'RWS_Tarot_10_Wheel_of_Fortune.jpg'},
-  {n:'Правосудие', s:'L', img:RWS+'RWS_Tarot_11_Justice.jpg'},
-  {n:'Повешенный', s:'M', img:RWS+'RWS_Tarot_12_Hanged_Man.jpg'},
-  {n:'Смерть', s:'N', img:RWS+'RWS_Tarot_13_Death.jpg'},
-  {n:'Умеренность', s:'O', img:RWS+'RWS_Tarot_14_Temperance.jpg'},
-  {n:'Дьявол', s:'P', img:RWS+'RWS_Tarot_15_Devil.jpg'},
-  {n:'Башня', s:'Q', img:RWS+'RWS_Tarot_16_Tower.jpg'},
-  {n:'Звезда', s:'R', img:RWS+'RWS_Tarot_17_Star.jpg'},
-  {n:'Луна', s:'S', img:RWS+'RWS_Tarot_18_Moon.jpg'},
-  {n:'Солнце', s:'T', img:RWS+'RWS_Tarot_19_Sun.jpg'},
-  {n:'Суд', s:'U', img:RWS+'RWS_Tarot_20_Judgement.jpg'},
-  {n:'Мир', s:'V', img:RWS+'RWS_Tarot_21_World.jpg'}
+  {n:'Шут', m:'Начало, спонтанность, риск, свобода. Доверься потоку.', img:RWS+'RWS_Tarot_00_Fool.jpg'},
+  {n:'Маг', m:'Воля, мастерство, проявление. У тебя есть все инструменты.', img:RWS+'RWS_Tarot_01_Magician.jpg'},
+  {n:'Верховная Жрица', m:'Тайна, интуиция, скрытое знание. Слушай внутренний голос.', img:RWS+'RWS_Tarot_02_High_Priestess.jpg'},
+  {n:'Императрица', m:'Плодородие, изобилие, забота. Время расцвета и творчества.', img:RWS+'RWS_Tarot_03_Empress.jpg'},
+  {n:'Император', m:'Структура, власть, контроль. Наведи порядок и установи границы.', img:RWS+'RWS_Tarot_04_Emperor.jpg'},
+  {n:'Иерофант', m:'Традиция, обучение, духовный закон. Ищи ответ в опыте других.', img:RWS+'RWS_Tarot_05_Hierophant.jpg'},
+  {n:'Влюблённые', m:'Выбор, союз, ценности, любовь. Важное решение сердцем.', img:RWS+'RWS_Tarot_06_Lovers.jpg'},
+  {n:'Колесница', m:'Победа, движение, воля. Действуй решительно, ты победишь.', img:RWS+'RWS_Tarot_07_Chariot.jpg'},
+  {n:'Сила', m:'Мягкая сила, терпение, укрощение. Не грубой силой, а любовью.', img:RWS+'RWS_Tarot_08_Strength.jpg'},
+  {n:'Отшельник', m:'Поиск, уединение, мудрость. Время побыть с собой.', img:RWS+'RWS_Tarot_09_Hermit.jpg'},
+  {n:'Колесо Фортуны', m:'Циклы, перемены, судьба. Всё меняется — доверься процессу.', img:RWS+'RWS_Tarot_10_Wheel_of_Fortune.jpg'},
+  {n:'Правосудие', m:'Баланс, закон, честность. Поступай по совести — это окупится.', img:RWS+'RWS_Tarot_11_Justice.jpg'},
+  {n:'Повешенный', m:'Пауза, жертва, новый взгляд. Остановись и посмотри иначе.', img:RWS+'RWS_Tarot_12_Hanged_Man.jpg'},
+  {n:'Смерть', m:'Конец, трансформация, обновление. Что-то уходит, чтобы пришло новое.', img:RWS+'RWS_Tarot_13_Death.jpg'},
+  {n:'Умеренность', m:'Гармония, баланс, исцеление. Найди золотую середину.', img:RWS+'RWS_Tarot_14_Temperance.jpg'},
+  {n:'Дьявол', m:'Зависимость, соблазн, тень. Что держит тебя на самом деле?', img:RWS+'RWS_Tarot_15_Devil.jpg'},
+  {n:'Башня', m:'Крах, внезапные перемены, освобождение. Разрушь то, что мешает.', img:RWS+'RWS_Tarot_16_Tower.jpg'},
+  {n:'Звезда', m:'Надежда, вдохновение, исцеление. Свет впереди — иди к нему.', img:RWS+'RWS_Tarot_17_Star.jpg'},
+  {n:'Луна', m:'Иллюзии, страхи, подсознание. Не всё то, чем кажется.', img:RWS+'RWS_Tarot_18_Moon.jpg'},
+  {n:'Солнце', m:'Радость, успех, ясность. Светлый период, всё сложится.', img:RWS+'RWS_Tarot_19_Sun.jpg'},
+  {n:'Суд', m:'Пробуждение, переоценка, зов. Время подвести итоги и начать заново.', img:RWS+'RWS_Tarot_20_Judgement.jpg'},
+  {n:'Мир', m:'Завершение, целостность, исполнение. Цикл завершён — ты дошёл.', img:RWS+'RWS_Tarot_21_World.jpg'}
 ];
 
-var state = { count: 0, cards: [], title: '' };
+var POSITIONS = {
+  1: ['Совет'],
+  3: ['Прошлое', 'Настоящее', 'Будущее'],
+  5: ['Суть', 'Причина', 'Итог', 'Блок', 'Совет'],
+  7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Совет', 'Итог'],
+  10: ['Суть', 'Препятствие', 'Основа', 'Прошлое', 'Цель', 'Будущее', 'Вы', 'Окружение', 'Надежды и страхи', 'Итог']
+};
+
+var state = { count: 0, cards: [], title: '', question: '', drawn: false };
 
 function go(id) {
   var screens = document.querySelectorAll('.screen');
   for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
   document.getElementById(id).classList.add('active');
+  var c = document.querySelector('.content');
+  if (c) c.scrollTop = 0;
 }
 
 function showToast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 2000);
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 
 function startReading(count, title) {
   if (balance < 1) {
-    showToast('Нет раскладов на балансе');
+    showToast('Нет раскладов на балансе. Активируй код в боте.');
     return;
   }
   state.count = count;
   state.title = title;
   state.cards = [];
+  state.question = '';
+  state.drawn = false;
+  
   document.getElementById('rtitle').textContent = title;
   document.getElementById('carea').innerHTML = '';
+  document.getElementById('qinput').value = '';
+  document.getElementById('qinput').style.display = 'block';
+  document.getElementById('qlocked').style.display = 'none';
+  document.getElementById('interp').style.display = 'none';
+  document.getElementById('interp').innerHTML = '';
   document.getElementById('dbtn').style.display = 'block';
   document.getElementById('dbtn').disabled = false;
+  document.getElementById('dbtn').textContent = 'Вытянуть карты';
   document.getElementById('fbtn').style.display = 'none';
-  document.getElementById('qinput').value = '';
+  document.getElementById('backFromReading').style.display = 'block';
+  
   go('s-reading');
 }
 
 function drawCards() {
+  if (state.drawn) return;
+  
+  state.question = document.getElementById('qinput').value.trim() || 'без вопроса';
+  state.drawn = true;
+  
+  document.getElementById('qinput').style.display = 'none';
+  var ql = document.getElementById('qlocked');
+  ql.style.display = 'block';
+  document.getElementById('qlocked-text').textContent = state.question;
+  document.getElementById('backFromReading').style.display = 'none';
+  
   var area = document.getElementById('carea');
   area.innerHTML = '';
   state.cards = [];
-  document.getElementById('dbtn').disabled = true;
 
   var used = {};
   for (var i = 0; i < state.count; i++) {
@@ -246,12 +295,7 @@ function drawCards() {
     var el = document.createElement('div');
     el.className = 'card';
 
-    var front = '';
-    if (card.img) {
-      front = '<img src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div class="card-symbol">' + card.s + '</div><div class="card-name">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
-    } else {
-      front = '<div class="card-fallback"><div class="card-symbol">' + card.s + '</div><div class="card-name">' + card.n + '</div></div>';
-    }
+    var front = '<img src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div style="font-size:14px;color:#ffb347;font-weight:800;padding:6px;text-align:center">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
 
     el.innerHTML = '<div class="card-face card-back">*</div><div class="card-face card-front">' + front + '</div>';
     area.appendChild(el);
@@ -262,20 +306,45 @@ function drawCards() {
   }
 
   setTimeout(function() {
-    document.getElementById('fbtn').style.display = 'block';
     document.getElementById('dbtn').style.display = 'none';
+    document.getElementById('fbtn').style.display = 'block';
+    showInterpretation();
   }, 400 + state.count * 180 + 900);
 }
 
+function showInterpretation() {
+  var interp = document.getElementById('interp');
+  var positions = POSITIONS[state.count] || [];
+  var html = '<div class="interp-title">Разбор расклада</div>';
+  
+  for (var i = 0; i < state.cards.length; i++) {
+    var card = state.cards[i];
+    var pos = positions[i] || ('Позиция ' + (i + 1));
+    html += '<div class="interp-item">';
+    html += '<div class="interp-pos">' + pos + '</div>';
+    html += '<div class="interp-name">' + card.n + '</div>';
+    html += '<div class="interp-meaning">' + card.m + '</div>';
+    html += '</div>';
+  }
+  
+  var adviceCard = state.cards[state.cards.length - 1];
+  html += '<div class="summary-box">';
+  html += '<div class="summary-title">Общий совет</div>';
+  html += '<div class="summary-text">' + adviceCard.m + '</div>';
+  html += '</div>';
+  
+  interp.innerHTML = html;
+  interp.style.display = 'block';
+}
+
 function finishReading() {
-  var question = document.getElementById('qinput').value || '-';
   var cardsStr = '';
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
     cardsStr += state.cards[i].n;
   }
 
-  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + question;
+  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
 
   if (tg && tg.sendData) {
     try {
@@ -304,13 +373,9 @@ function backToBot() {
 
 function drawDaily() {
   var card = CARDS[Math.floor(Math.random() * CARDS.length)];
-  var html = '';
-  if (card.img) {
-    html = '<img class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
-  } else {
-    html = '<div style="font-size:70px;margin-bottom:14px">' + card.s + '</div>';
-  }
+  var html = '<img class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
   html += '<div class="daily-name">' + card.n + '</div>';
+  html += '<div class="daily-meaning">' + card.m + '</div>';
   document.getElementById('dbox').innerHTML = html;
   go('s-result');
 }
