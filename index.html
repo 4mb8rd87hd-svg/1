@@ -44,8 +44,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .btn.support .btn-icon { background:rgba(106,77,255,0.15); border-color:rgba(106,77,255,0.3); }
 .btn.tasks .btn-icon { background:rgba(255,179,71,0.15); border-color:rgba(255,179,71,0.3); }
 .btn.back { background:rgba(255,127,80,0.08); border-color:rgba(255,127,80,0.3); }
-.btn.back .btn-icon { background:rgba(255,127,80,0.15); border-color:rgba(255,127,80,0.3);Gl }
-.spread-btn { width:100%; padding:14pxow 16px; margin-bottom:8 px; background:rgba(3255,255,255,0.04); border:1px solid. rgba(255,255,255,0.082); border-radius:14px; color:#fff; text-align:left; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:10px; }
+.btn.back .btn-icon { background:rgba(255,127,80,0.15); border-color:rgba(255,127,80,0.3); }
+/* FIX: .spread-btn — исправлены опечатки 14pxow, 8 px, rgba(3255), solid. */
+.spread-btn { width:100%; padding:14px 16px; margin-bottom:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; color:#fff; text-align:left; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:10px; }
 .spread-btn:active { transform:scale(0.98); background:rgba(255,127,80,0.1); border-color:rgba(255,179,71,0.5); }
 .spread-num { width:30px; height:30px; line-height:30px; text-align:center; background:linear-gradient(135deg, #ffb347, #ff7f50); border-radius:9px; font-weight:900; color:#08080f; flex-shrink:0; font-size:14px; }
 .back-btn { padding:8px 0; background:none; border:none; color:rgba(255,255,255,0.6); font-size:14px; font-weight:700; cursor:pointer; margin-bottom:8px; font-family:inherit; }
@@ -56,10 +57,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .cards-row { display:flex; justify-content:center; gap:6px; margin:14px 0; flex-wrap:wrap; perspective:1000px; }
 .card { width:72px; height:120px; position:relative; transform-style:preserve-3d; }
 .card.flipped { animation:flipAndFloat 0.8s ease-out forwards, floatAfter 3.2s ease-in-out 0.8s infinite; }
-.card.flipped .card-front { animation:cards ease-in-out 0.8s infinite; }
 @keyframes flipAndFloat { from{transform:rotateY(0deg) translateY(0);} to{transform:rotateY(180deg) translateY(0);} }
 @keyframes floatAfter { 0%,100%{transform:rotateY(180deg) translateY(0);} 50%{transform:rotateY(180deg) translateY(-7px);} }
-@keyframes cardGlow { 0%,100%{box-shadow:0 0 0 rgba(255,179,71,0), 0 0 0 rgba(139,92,246,0);} 50%{box-shadow:0 0 18px rgba(255,179,71,0.5), 0 0 36px rgba(139,92,246,0.4);} }
 .card-face { position:absolute; inset:0; border-radius:10px; backface-visibility:hidden; -webkit-backface-visibility:hidden; display:flex; align-items:center; justify-content:center; flex-direction:column; padding:4px; text-align:center; }
 .card-back { background:linear-gradient(135deg, #1a1a3e, #0f0f28); border:2px solid rgba(255,179,71,0.35); font-size:30px; color:rgba(255,179,71,0.6); }
 .card-front { transform:rotateY(180deg); background:#1e1e3f; border:2px solid rgba(255,179,71,0.7); padding:0; overflow:hidden; position:relative; border-radius:10px; }
@@ -184,8 +183,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       </div>
     </div>
     <div class="balance">
-      <div class="bal-item" id="hBal">0</div>
-      <div class="bal-item" id="hAcc">0</div>
+      <div class="bal-item" id="hBal">🎟 0</div>
+      <div class="bal-item" id="hAcc">🔍 0</div>
       <div class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</div>
     </div>
   </div>
@@ -195,7 +194,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <div class="greeting">Привет,<br><span class="greeting-name" id="gName">друг</span> ✨</div>
       <div class="greeting-sub">Карты готовы говорить с тобой</div>
       <div class="no-keys-banner" id="noKeysBanner" style="display:none">
-        <div class="nkb-text">🔒 Расклады закончились</div>
+        <div class="nkb-text">🔒 Расклады и разборы закончились</div>
         <div class="nkb-actions">
           <button class="nkb-btn" onclick="go('s-tasks')">🎁 Задания</button>
           <button class="nkb-btn" onclick="openSupportScreen()">✉️ Админу</button>
@@ -327,11 +326,20 @@ function getUserId() {
 }
 var HIST_KEY = 'youaura_hist_v1_' + getUserId();
 
-/* ===== ЗВУК ===== */
+/* ===== ЗВУК + ФОНОВАЯ МУЗЫКА ===== */
 var soundOn = true;
 try { soundOn = localStorage.getItem('youaura_sound') !== 'off'; } catch(e) {}
 var audioCtx = null;
-function initAudio() { if (audioCtx) return; try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+var musicGain = null;
+var musicNodes = [];
+
+function initAudio() {
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch(e) {} }
+    return;
+  }
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+}
 function playTone(freq, dur, type, vol) {
   if (!soundOn) return;
   initAudio();
@@ -349,6 +357,72 @@ function soundFlip() { playTone(880, 0.06, 'sine', 0.06); setTimeout(function(){
 function soundSuccess() { playTone(523, 0.1, 'sine', 0.1); setTimeout(function(){ playTone(659, 0.1, 'sine', 0.1); }, 80); setTimeout(function(){ playTone(784, 0.18, 'sine', 0.1); }, 160); }
 function soundError() { playTone(220, 0.15, 'sine', 0.1); setTimeout(function(){ playTone(165, 0.2, 'sine', 0.1); }, 100); }
 function soundPop() { playTone(700, 0.05, 'sine', 0.08); }
+
+/* MUSIC: генеративный эмбиент (Am-аккорд + LFO-пульсация).
+   Не требует mp3, работает офлайн, ~0 КБ. */
+function startMusic() {
+  if (!soundOn) return;
+  initAudio();
+  if (!audioCtx) return;
+  if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch(e) {} }
+  if (musicGain) return; // уже играет
+
+  try {
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = 0.001;
+    musicGain.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 2.5);
+    musicGain.connect(audioCtx.destination);
+
+    var filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 550;
+    filter.Q.value = 0.7;
+    filter.connect(musicGain);
+
+    // Аккорд Am: A1=55, E2=82.5, A2=110, C3=130.81, E3=164.81
+    var freqs = [55, 82.5, 110, 130.81, 164.81];
+    for (var i = 0; i < freqs.length; i++) {
+      var f = freqs[i];
+      var osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      osc.detune.value = (Math.random() - 0.5) * 6;
+
+      var g = audioCtx.createGain();
+      g.gain.value = 0.22 / (1 + i * 0.6);
+
+      // Медленная пульсация громкости
+      var lfo = audioCtx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.04 + Math.random() * 0.08;
+      var lfoG = audioCtx.createGain();
+      lfoG.gain.value = 0.10 / (1 + i * 0.6);
+      lfo.connect(lfoG);
+      lfoG.connect(g.gain);
+
+      osc.connect(g);
+      g.connect(filter);
+      osc.start();
+      lfo.start();
+      musicNodes.push(osc, lfo);
+    }
+  } catch(e) { musicGain = null; }
+}
+function stopMusic() {
+  if (!audioCtx || !musicGain) { musicNodes = []; musicGain = null; return; }
+  try {
+    musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    musicGain.gain.setValueAtTime(musicGain.gain.value, audioCtx.currentTime);
+    musicGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+  } catch(e) {}
+  var nodes = musicNodes; musicNodes = [];
+  var gainRef = musicGain; musicGain = null;
+  setTimeout(function() {
+    for (var i = 0; i < nodes.length; i++) { try { nodes[i].stop(); } catch(e) {} }
+    try { gainRef.disconnect(); } catch(e) {}
+  }, 500);
+}
+
 function haptic(t) {
   if (tg && tg.HapticFeedback) { try {
     if (t === 'light') tg.HapticFeedback.impactOccurred('light');
@@ -365,15 +439,31 @@ function toggleSound() {
   soundOn = !soundOn;
   try { localStorage.setItem('youaura_sound', soundOn ? 'on' : 'off'); } catch(e) {}
   updateSoundIcon();
-  if (soundOn) soundPop();
+  if (soundOn) { initAudio(); startMusic(); soundPop(); }
+  else { stopMusic(); }
   haptic('light');
 }
-document.body.addEventListener('touchstart', function onT() { initAudio(); document.body.removeEventListener('touchstart', onT); }, {once: true});
-document.body.addEventListener('click', function onC() { initAudio(); document.body.removeEventListener('click', onC); }, {once: true});
+// Первый тап/клик = user gesture → стартуем аудио и музыку
+document.body.addEventListener('touchstart', function onT() {
+  initAudio(); startMusic();
+  document.body.removeEventListener('touchstart', onT);
+}, {once: true});
+document.body.addEventListener('click', function onC() {
+  initAudio(); startMusic();
+  document.body.removeEventListener('click', onC);
+}, {once: true});
+
+/* FIX: универсальный confirm через tg.showConfirm, fallback на confirm() */
+function askConfirm(text, onYes) {
+  if (tg && tg.showConfirm) {
+    try { tg.showConfirm(text, function(ok) { if (ok) onYes(); }); return; } catch(e) {}
+  }
+  if (confirm(text)) onYes();
+}
 
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
-document.getElementById('hBal').textContent = 'Раскладов: ' + balance;
-document.getElementById('hAcc').textContent = 'Разборов: ' + access;
+document.getElementById('hBal').textContent = '🎟 ' + balance;
+document.getElementById('hAcc').textContent = '🔍 ' + access;
 document.getElementById('gName').textContent = userName;
 document.getElementById('pvFree').textContent = balance;
 document.getElementById('pvAcc').textContent = access;
@@ -391,7 +481,11 @@ updateSoundIcon();
   img.src = url;
 })();
 
-if (balance < 1) { var nb = document.getElementById('noKeysBanner'); if (nb) nb.style.display = 'block'; }
+// FIX: баннер учитывает access
+if (balance < 1 && access < 1) {
+  var nb = document.getElementById('noKeysBanner');
+  if (nb) nb.style.display = 'block';
+}
 
 var levels = [
   { req: 10, medal: '🌱', name: 'Новичок' },
@@ -550,7 +644,7 @@ var POSITIONS = {
   7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Совет', 'Итог'],
   10: ['Суть', 'Препятствие', 'Основа', 'Прошлое', 'Цель', 'Будущее', 'Вы', 'Окружение', 'Надежды и страхи', 'Итог']
 };
-var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false };
+var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false, canSave: false, canFull: false };
 
 function go(id) {
   var s = document.querySelectorAll('.screen');
@@ -601,7 +695,7 @@ function openNoKeysModal() {
   ov.className = 'no-keys-overlay';
   ov.id = 'noKeysOverlay';
   ov.onclick = function(e) { if (e.target === ov) closeNoKeysModal(); };
-  ov.innerHTML = '<div class="no-keys-modal" onclick="event.stopPropagation()"><div class="nk-icon">🔒</div><div class="nk-title">Расклады закончились</div><div class="nk-sub">Активируй промокод в Заданиях или напиши админу - он выдаст ключ</div><button class="nk-btn primary" onclick="goTasksFromModal()">🎁 В задания</button><button class="nk-btn" onclick="goSupportFromModal()">✉️ Написать админу</button><button class="nk-close" onclick="closeNoKeysModal()">Закрыть</button></div>';
+  ov.innerHTML = '<div class="no-keys-modal" onclick="event.stopPropagation()"><div class="nk-icon">🔒</div><div class="nk-title">Расклады и разборы закончились</div><div class="nk-sub">Активируй промокод в Заданиях или напиши админу - он выдаст ключ</div><button class="nk-btn primary" onclick="goTasksFromModal()">🎁 В задания</button><button class="nk-btn" onclick="goSupportFromModal()">✉️ Написать админу</button><button class="nk-close" onclick="closeNoKeysModal()">Закрыть</button></div>';
   document.body.appendChild(ov);
 }
 function closeNoKeysModal() {
@@ -611,9 +705,13 @@ function closeNoKeysModal() {
 function goTasksFromModal() { closeNoKeysModal(); go('s-tasks'); }
 function goSupportFromModal() { closeNoKeysModal(); openSupportScreen(); }
 
+// FIX: startReading пускает при balance >= 1 ИЛИ access >= 1
 function startReading(count, title) {
-  if (balance < 1) { openNoKeysModal(); return; }
-  state.count = count; state.title = title; state.cards = []; state.question = ''; state.drawn = false; state.finished = false;
+  if (balance < 1 && access < 1) { openNoKeysModal(); return; }
+  state.count = count; state.title = title; state.cards = []; state.question = '';
+  state.drawn = false; state.finished = false;
+  state.canSave = balance >= 1;
+  state.canFull = access >= 1;
   document.getElementById('rtitle').textContent = title;
   document.getElementById('carea').innerHTML = '';
   document.getElementById('qinput').value = '';
@@ -672,6 +770,7 @@ function showInterpretation() {
   interp.innerHTML = html;
   interp.style.display = 'block';
 }
+// FIX: показываем "Сохранить" активной только при balance >= 1
 function showActionButtons() {
   var area = document.getElementById('actionArea');
   var html = '';
@@ -680,13 +779,21 @@ function showActionButtons() {
   } else {
     html += '<button class="act-full" onclick="showToast(\'Нет разборов. Активируй WM-код в Заданиях.\', true)" style="background:linear-gradient(135deg,#4a3a6a,#2a1f5e); box-shadow:none;">🔍 Полный разбор <span class="badge">нужен WM-код</span></button>';
   }
-  html += '<div class="act-row"><button class="act-secondary act-save" onclick="finishWithSave()">✅ Сохранить</button><button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button></div>';
+  var saveBtn;
+  if (balance > 0) {
+    saveBtn = '<button class="act-secondary act-save" onclick="finishWithSave()">✅ Сохранить</button>';
+  } else {
+    saveBtn = '<button class="act-secondary act-save" onclick="showToast(\'Нет раскладов для сохранения — нужен GIFT/WM\', true)" style="opacity:0.5">✅ Сохранить</button>';
+  }
+  html += '<div class="act-row">' + saveBtn + '<button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button></div>';
   area.innerHTML = html;
   area.style.display = 'block';
 }
 
+// FIX: проверка balance
 function finishWithSave() {
   if (state.finished) return;
+  if (balance < 1) { showToast('Нет раскладов для сохранения — нужен GIFT/WM', true); return; }
   state.finished = true;
   var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
@@ -696,12 +803,13 @@ function finishWithSave() {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: '', synced: true });
   balance = Math.max(0, balance - 1);
-  document.getElementById('hBal').textContent = 'Раскладов: ' + balance;
+  document.getElementById('hBal').textContent = '🎟 ' + balance;
   document.getElementById('pvFree').textContent = balance;
   var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
   sendAndClose(payload, '✨', 'Расклад сохранён');
 }
 
+// FIX: списывает ТОЛЬКО access
 function finishWithFull() {
   if (state.finished) return;
   if (access < 1) { showToast('Нет разборов', true); return; }
@@ -714,18 +822,19 @@ function finishWithFull() {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
   access = Math.max(0, access - 1);
-  balance = Math.max(0, balance - 1);
-  document.getElementById('hAcc').textContent = 'Разборов: ' + access;
-  document.getElementById('hBal').textContent = 'Раскладов: ' + balance;
+  document.getElementById('hAcc').textContent = '🔍 ' + access;
   var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
+// FIX: через askConfirm + сброс state.drawn
 function finishWithAnother() {
-  if (!confirm('Текущий расклад не сохранён. Сделать новый?')) return;
-  soundPop(); haptic('light');
-  state.finished = false;
-  go('s-spread');
+  askConfirm('Текущий расклад не сохранён. Сделать новый?', function() {
+    soundPop(); haptic('light');
+    state.finished = false;
+    state.drawn = false;
+    go('s-spread');
+  });
 }
 
 function sendAndClose(payload, icon, text) {
@@ -829,6 +938,8 @@ function markFb(idx, result) {
     else { showToast('🟡 Отмечено: частично'); haptic('light'); }
   } catch(e) {}
 }
+
+// FIX: markAllSynced ТОЛЬКО после успешного tg.sendData
 function syncHistory() {
   var unsync = getUnsyncedCounts();
   if (unsync.total === 0) { showToast('Всё синхронизировано'); return; }
@@ -838,17 +949,24 @@ function syncHistory() {
   ov.innerHTML = '<div class="success-icon">📤</div><div class="success-text">Синхронизация</div><div class="success-sub">Отправляем ' + unsync.total + ' отметок...</div>';
   document.body.appendChild(ov);
   soundSuccess(); haptic('success');
-  markAllSynced();
   setTimeout(function() {
-    try { tg.sendData(payload); setTimeout(function(){ try { tg.close(); } catch(e){} }, 100); }
-    catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
+    try {
+      tg.sendData(payload);
+      markAllSynced(); // помечаем ТОЛЬКО после успешной отправки
+      setTimeout(function(){ try { tg.close(); } catch(e){} }, 100);
+    } catch(e) {
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      showToast('Ошибка: ' + e.message, true);
+    }
   }, 900);
 }
 function openHistory() { renderHistory(); go('s-history'); }
+// FIX: через askConfirm
 function clearHistory() {
-  if (!confirm('Удалить всю историю?')) return;
-  try { localStorage.removeItem(HIST_KEY); } catch(e) {}
-  renderHistory(); showToast('Очищено');
+  askConfirm('Удалить всю историю?', function() {
+    try { localStorage.removeItem(HIST_KEY); } catch(e) {}
+    renderHistory(); showToast('Очищено');
+  });
 }
 
 function openSupportScreen() {
@@ -876,17 +994,21 @@ function sendSupport() {
   }, 1000);
 }
 
+// FIX: markAllSynced ТОЛЬКО после успешного tg.sendData
 function backToBot() {
   var unsync = getUnsyncedCounts();
   var payload;
   if (unsync.total > 0) {
     payload = 'back|' + unsync.yes + '|' + unsync.no + '|' + unsync.partly;
-    markAllSynced();
   } else {
     payload = 'back|||';
   }
   if (tg && tg.sendData) {
-    try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+    try {
+      tg.sendData(payload);
+      if (unsync.total > 0) markAllSynced();
+      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
+    }
     catch(e) { showToast('Ошибка', true); }
   } else { showToast('Открой из Telegram', true); }
 }
