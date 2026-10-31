@@ -14,7 +14,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
 .app { height:100vh; height:100dvh; display:flex; flex-direction:column; padding:16px; padding-top:max(16px, env(safe-area-inset-top)); padding-bottom:max(16px, env(safe-area-inset-bottom)); position:relative; z-index:1; }
 
-/* HEADER */
 .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
 .logo { display:flex; align-items:center; }
 .logo-icon { width:42px; height:42px; position:relative; display:flex; align-items:center; justify-content:center; }
@@ -32,6 +31,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .greeting { font-size:28px; font-weight:900; letter-spacing:-1px; line-height:1.1; margin:16px 0 4px; }
 .greeting-name { background:linear-gradient(135deg, #fff 0%, #ffb347 60%, #ff7f50 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .greeting-sub { font-size:14px; color:rgba(255,255,255,0.55); margin-bottom:20px; }
+
+.no-keys-banner { padding:14px 16px; background:rgba(255,127,80,0.1); border:1px solid rgba(255,127,80,0.4); border-radius:14px; margin-bottom:14px; }
+.nkb-text { font-size:13px; font-weight:800; color:#ff7f50; margin-bottom:10px; }
+.nkb-actions { display:flex; gap:8px; }
+.nkb-btn { flex:1; padding:10px; background:rgba(255,127,80,0.15); border:1px solid rgba(255,127,80,0.4); border-radius:10px; color:#ff7f50; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; }
+.nkb-btn:active { transform:scale(0.97); background:rgba(255,127,80,0.25); }
+
 .btn { width:100%; padding:16px; margin-bottom:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; color:#fff; font-size:15px; font-weight:700; text-align:left; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:12px; }
 .btn:active { transform:scale(0.97); background:rgba(255,255,255,0.08); }
 .btn-icon { width:40px; height:40px; border-radius:11px; background:rgba(255,179,71,0.1); border:1px solid rgba(255,179,71,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
@@ -51,7 +57,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .screen.active { display:block; animation:fadeIn 0.35s; }
 @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
 
-/* CARDS */
 .cards-row { display:flex; justify-content:center; gap:6px; margin:14px 0; flex-wrap:wrap; perspective:1000px; }
 .card { width:72px; height:120px; position:relative; transform-style:preserve-3d; }
 .card.flipped { animation:flipAndFloat 0.8s ease-out forwards, floatAfter 3.2s ease-in-out 0.8s infinite; }
@@ -69,6 +74,18 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .big-btn { width:100%; padding:18px; background:linear-gradient(135deg, #ffb347, #ff7f50); border:none; border-radius:16px; color:#08080f; font-size:16px; font-weight:900; cursor:pointer; margin-top:10px; font-family:inherit; box-shadow:0 8px 30px rgba(255,127,80,0.35); }
 .big-btn:active { transform:scale(0.97); }
 .big-btn:disabled { opacity:0.4; }
+
+/* ACTION BUTTONS AFTER READING */
+.act-full { width:100%; padding:16px; background:linear-gradient(135deg, #a78bfa, #6d28d9); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:900; cursor:pointer; margin-top:8px; font-family:inherit; box-shadow:0 8px 24px rgba(139,92,246,0.4); display:flex; align-items:center; justify-content:center; gap:8px; }
+.act-full:active { transform:scale(0.97); }
+.act-full:disabled { opacity:0.4; box-shadow:none; }
+.act-full .badge { font-size:11px; padding:3px 8px; background:rgba(255,255,255,0.2); border-radius:100px; font-weight:800; }
+.act-row { display:flex; gap:8px; margin-top:8px; }
+.act-secondary { flex:1; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
+.act-secondary:active { transform:scale(0.97); background:rgba(255,255,255,0.12); }
+.act-save { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.35); color:#4ade80; }
+.act-save:active { background:rgba(74,222,128,0.2); }
+
 .q-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; font-family:inherit; margin:12px 0; resize:none; }
 .q-input::placeholder { color:rgba(255,255,255,0.35); }
 .q-input:focus { outline:none; border-color:rgba(255,179,71,0.5); }
@@ -80,9 +97,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .interp-pos { font-size:10px; color:rgba(255,255,255,0.5); text-transform:uppercase; font-weight:700; margin-bottom:3px; }
 .interp-name { font-size:14px; font-weight:800; margin-bottom:3px; }
 .interp-meaning { font-size:12px; color:rgba(255,255,255,0.7); line-height:1.4; }
-.summary { padding:14px; background:rgba(255,179,71,0.08); border:1px solid rgba(255,179,71,0.35); border-radius:14px; margin-top:10px; }
-.summary-title { font-size:11px; color:#ffb347; font-weight:800; text-transform:uppercase; margin-bottom:6px; }
-.summary-text { font-size:13px; color:rgba(255,255,255,0.85); line-height:1.5; }
+
 .toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%) translateY(100px); background:linear-gradient(135deg, #ffb347, #ff7f50); color:#08080f; padding:12px 22px; border-radius:100px; font-weight:800; font-size:13px; opacity:0; transition:all 0.3s; z-index:99; pointer-events:none; max-width:90%; text-align:center; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 .daily-box { text-align:center; padding:24px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,179,71,0.25); border-radius:20px; margin-top:16px; }
@@ -90,9 +105,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .daily-name { font-size:22px; font-weight:900; color:#ffb347; margin-bottom:6px; }
 .daily-meaning { font-size:13px; color:rgba(255,255,255,0.7); line-height:1.5; }
 
-/* PROFILE */
 .profile-card { padding:24px 20px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:20px; text-align:center; margin-top:12px; }
-.avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, #ffb347, #ff7f50); display:inline-flex; align-items:center; justify-content:center; font-size:32px; font-weight:900; color:#08080f; margin-bottom:12px; box-shadow:0 12px 30px rgba(255,127,80,0.35); }
+.avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, #ffb347, #ff7f50); display:inline-flex; align-items:center; justify-content:center; font-size:32px; font-weight:900; color:#08080f; margin-bottom:12px; box-shadow:0 12px 30px rgba(255,127,80,0.35); overflow:hidden; }
+.avatar .av-img { width:100%; height:100%; object-fit:cover; display:block; }
 .profile-name { font-size:22px; font-weight:900; margin-bottom:6px; }
 .profile-level { display:inline-block; padding:5px 14px; background:rgba(255,179,71,0.1); border:1px solid rgba(255,179,71,0.35); border-radius:100px; font-size:12px; font-weight:800; color:#ffb347; }
 .progress-bar-wrap { margin-top:14px; }
@@ -104,11 +119,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .stat-label { font-size:10px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.5px; font-weight:700; }
 .stat-value { font-size:24px; font-weight:900; margin-top:4px; color:#ffb347; }
 
+.quick-actions { display:flex; gap:8px; margin-top:16px; }
+.qa-btn { flex:1; padding:12px 10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.qa-btn:active { transform:scale(0.97); background:rgba(255,179,71,0.1); border-color:rgba(255,179,71,0.3); }
+.qa-btn span { font-size:20px; }
+
 .section { margin-top:20px; }
 .section-title { font-size:14px; font-weight:800; color:#ffb347; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }
 .ach-item { display:flex; align-items:center; gap:12px; padding:10px 14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; margin-bottom:6px; font-size:13px; }
 .ach-item.locked { opacity:0.5; }
-.ach-medal { font-size:20px; flex-shrinkcenter:0; }
+.ach-medal { font-size:20px; flex-shrink:0; }
 .ach-name { flex:1; font-weight:700; }
 .ach-req { font-size:11px; color:rgba(255,255,255,0.5); font-weight:600; }
 .ach-check { font-size:14px; }
@@ -118,13 +138,19 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .hist-date { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:6px; font-weight:700; letter-spacing:0.3px; }
 .hist-title { font-size:14px; font-weight:800; color:#ffb347; margin-bottom:6px; }
 .hist-q { font-size:12px; color:rgba(255,255,255,0.65); margin-bottom:8px; font-style:italic; line-height:1.4; }
-.hist-cards { display:flex; flex-wrap:wrap; gap:4px; }
+.hist-cards { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
 .hist-card { padding:4px 8px; background:rgba(255,179,71,0.1); border:1px solid rgba(255,179,71,0.25); border-radius:6px; font-size:10px; font-weight:700; color:#ffb347; }
-.hist-empty { text-align:; padding:60px 20px; color:rgba(255,255,255,0.4); font-size:14px; line-height:1.6; }
+.hist-fb { display:flex; gap:6px; }
+.hist-fb-btn { flex:1; padding:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:#fff; font-size:11px; font-weight:800; cursor:pointer; font-family:inherit; }
+.hist-fb-btn:active { transform:scale(0.96); }
+.hist-fb-btn.yes { background:rgba(74,222,128,0.15); border-color:rgba(74,222,128,0.4); color:#4ade80; }
+.hist-fb-btn.no { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.4); color:#ef4444; }
+.hist-fb-btn.partly { background:rgba(251,191,36,0.15); border-color:rgba(251,191,36,0.4); color:#fbbf24; }
+.hist-fb-result { padding:8px 10px; background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); border-radius:8px; font-size:11px; font-weight:700; color:#4ade80; text-align:center; }
+.hist-empty { text-align:center; padding:60px 20px; color:rgba(255,255,255,0.4); font-size:14px; line-height:1.6; }
 .hist-clear { width:100%; padding:12px; background:rgba(255,127,80,0.08); border:1px solid rgba(255,127,80,0.3); border-radius:12px; color:#ff7f50; font-weight:700; cursor:pointer; margin-top:16px; font-family:inherit; font-size:13px; }
 .hist-clear:active { transform:scale(0.97); }
 
-/* TASKS */
 .task-card { padding:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; margin-bottom:12px; }
 .task-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
 .task-icon { font-size:20px; }
@@ -140,16 +166,24 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .promo-input::placeholder { color:rgba(255,255,255,0.3); text-transform:none; letter-spacing:normal; }
 .promo-input:focus { outline:none; border-color:rgba(255,179,71,0.5); }
 
-/* SUPPORT */
 .support-hint { font-size:13px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:4px; }
 .support-counter { text-align:right; font-size:11px; color:rgba(255,255,255,0.35); margin-top:-6px; margin-bottom:12px; font-weight:600; }
 
-/* OVERLAY */
 .success-overlay { position:fixed; inset:0; background:rgba(8,8,15,0.96); z-index:200; display:flex; flex-direction:column; align-items:center; justify-content:center; animation:fadeIn 0.25s; }
 .success-icon { font-size:76px; margin-bottom:22px; animation:popIn 0.5s ease-out; }
 @keyframes popIn { 0%{transform:scale(0); opacity:0;} 70%{transform:scale(1.15); opacity:1;} 100%{transform:scale(1);} }
 .success-text { font-size:22px; font-weight:900; color:#ffb347; margin-bottom:8px; letter-spacing:-0.5px; }
 .success-sub { font-size:13px; color:rgba(255,255,255,0.55); }
+
+.no-keys-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:210; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.25s; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+.no-keys-modal { background:linear-gradient(135deg, #1a1442 0%, #14143a 100%); border:1px solid rgba(255,127,80,0.4); border-radius:22px; padding:28px 22px; max-width:340px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,127,80,0.2); }
+.nk-icon { font-size:52px; margin-bottom:14px; }
+.nk-title { font-size:18px; font-weight:900; color:#ff7f50; margin-bottom:8px; }
+.nk-sub { font-size:13px; color:rgba(255,255,255,0.6); line-height:1.5; margin-bottom:20px; }
+.nk-btn { width:100%; padding:14px; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; margin-bottom:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); color:#fff; }
+.nk-btn:active { transform:scale(0.97); }
+.nk-btn.primary { background:linear-gradient(135deg, #ffb347, #ff7f50); color:#08080f; border:none; box-shadow:0 6px 20px rgba(255,127,80,0.4); }
+.nk-close { padding:10px; background:none; border:none; color:rgba(255,255,255,0.4); font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin-top:4px; }
 </style>
 </head>
 <body>
@@ -169,10 +203,17 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   </div>
 
   <div class="content">
-    <!-- HOME -->
     <div class="screen active" id="s-home">
       <div class="greeting">Привет,<br><span class="greeting-name" id="gName">друг</span> ✨</div>
       <div class="greeting-sub">Карты готовы говорить с тобой</div>
+
+      <div class="no-keys-banner" id="noKeysBanner" style="display:none">
+        <div class="nkb-text">🔒 Расклады закончились</div>
+        <div class="nkb-actions">
+          <button class="nkb-btn" onclick="go('s-tasks')">🎁 Задания</button>
+          <button class="nkb-btn" onclick="openSupportScreen()">✉️ Админу</button>
+        </div>
+      </div>
 
       <button class="btn" onclick="go('s-spread')">
         <div class="btn-icon">🔮</div>
@@ -210,7 +251,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       </button>
     </div>
 
-    <!-- SPREAD -->
     <div class="screen" id="s-spread">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Выбери расклад</div>
@@ -221,7 +261,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <button class="spread-btn" onclick="startReading(10,'Кельтский крест')"><div class="spread-num">5</div><div><div class="btn-title">Кельтский крест</div><div class="btn-desc">10 карт · полная картина</div></div></button>
     </div>
 
-    <!-- READING -->
     <div class="screen" id="s-reading">
       <button class="back-btn" id="backFromReading" onclick="go('s-spread')">‹ Назад</button>
       <div class="title" id="rtitle">Расклад</div>
@@ -229,11 +268,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <div class="q-locked" id="qlocked" style="display:none"><div class="ql-label">Твой вопрос</div><div id="qlocked-text">-</div></div>
       <div class="cards-row" id="carea"></div>
       <button class="big-btn" id="dbtn" onclick="drawCards()">Вытянуть карты</button>
-      <button class="big-btn" id="fbtn" onclick="finishReading()" style="display:none">Отправить в бот</button>
       <div class="interp" id="interp" style="display:none"></div>
+      <div id="actionArea" style="display:none; margin-top:16px"></div>
     </div>
 
-    <!-- PROFILE -->
     <div class="screen" id="s-profile">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Профиль</div>
@@ -250,6 +288,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="stat"><div class="stat-label">Разборов</div><div class="stat-value" id="pvAcc">0</div></div>
           <div class="stat"><div class="stat-label">Всего</div><div class="stat-value" id="pvRead">0</div></div>
         </div>
+        <div class="quick-actions">
+          <button class="qa-btn" onclick="go('s-tasks')"><span>🎟</span>Активировать код</button>
+          <button class="qa-btn" onclick="openSupportScreen()"><span>✉️</span>Поддержка</button>
+        </div>
       </div>
 
       <div class="section">
@@ -263,14 +305,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       </div>
     </div>
 
-    <!-- HISTORY -->
     <div class="screen" id="s-history">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">История раскладов</div>
       <div id="histArea"></div>
     </div>
 
-    <!-- TASKS -->
     <div class="screen" id="s-tasks">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Задания</div>
@@ -295,7 +335,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       </div>
     </div>
 
-    <!-- SUPPORT -->
     <div class="screen" id="s-support">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Поддержка</div>
@@ -305,7 +344,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <button class="big-btn" onclick="sendSupport()">Отправить</button>
     </div>
 
-    <!-- RESULT -->
     <div class="screen" id="s-result">
       <button class="back-btn" onclick="go('s-home')">‹ На главную</button>
       <div class="title">Карта дня</div>
@@ -351,7 +389,21 @@ document.getElementById('pvFree').textContent = balance;
 document.getElementById('pvAcc').textContent = access;
 document.getElementById('pvRead').textContent = readings;
 document.getElementById('pn').textContent = userName;
-if (userName.length > 0) document.getElementById('av').textContent = userName.charAt(0).toUpperCase();
+
+(function applyAvatar() {
+  var avEl = document.getElementById('av');
+  var url = (tgUser && tgUser.photo_url) ? tgUser.photo_url : '';
+  if (!url) { if (userName.length > 0) avEl.textContent = userName.charAt(0).toUpperCase(); return; }
+  var img = new Image();
+  img.onload = function() { avEl.innerHTML = '<img src="' + url + '" alt="" class="av-img">'; };
+  img.onerror = function() { if (userName.length > 0) avEl.textContent = userName.charAt(0).toUpperCase(); };
+  img.src = url;
+})();
+
+if (balance < 1) {
+  var nb = document.getElementById('noKeysBanner');
+  if (nb) nb.style.display = 'block';
+}
 
 var levels = [
   { req: 10, medal: '🌱', name: 'Новичок' },
@@ -520,7 +572,7 @@ var POSITIONS = {
   7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Совет', 'Итог'],
   10: ['Суть', 'Препятствие', 'Основа', 'Прошлое', 'Цель', 'Будущее', 'Вы', 'Окружение', 'Надежды и страхи', 'Итог']
 };
-var state = { count: 0, cards: [], title: '', question: '', drawn: false };
+var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false };
 
 function go(id) {
   var s = document.querySelectorAll('.screen');
@@ -549,26 +601,46 @@ function copyRef() {
 }
 function checkSub() {
   if (tg && tg.sendData) {
-    try {
-      tg.sendData('check_sub|||');
-      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
-    } catch(e) { showToast('Ошибка: ' + e.message); }
+    try { tg.sendData('check_sub|||'); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+    catch(e) { showToast('Ошибка: ' + e.message); }
   }
 }
 function redeemCode() {
   var code = document.getElementById('promoInput').value.trim().toUpperCase();
   if (code.length < 5) { showToast('Введи код'); return; }
   if (tg && tg.sendData) {
-    try {
-      tg.sendData('redeem|' + code);
-      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
-    } catch(e) { showToast('Ошибка: ' + e.message); }
+    try { tg.sendData('redeem|' + code); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+    catch(e) { showToast('Ошибка: ' + e.message); }
   }
 }
 
+function openNoKeysModal() {
+  if (document.getElementById('noKeysOverlay')) return;
+  var ov = document.createElement('div');
+  ov.className = 'no-keys-overlay';
+  ov.id = 'noKeysOverlay';
+  ov.onclick = function(e) { if (e.target === ov) closeNoKeysModal(); };
+  ov.innerHTML =
+    '<div class="no-keys-modal" onclick="event.stopPropagation()">' +
+      '<div class="nk-icon">🔒</div>' +
+      '<div class="nk-title">Расклады закончились</div>' +
+      '<div class="nk-sub">Активируй промокод в Заданиях или напиши админу - он выдаст ключ</div>' +
+      '<button class="nk-btn primary" onclick="goTasksFromModal()">🎁 В задания</button>' +
+      '<button class="nk-btn" onclick="goSupportFromModal()">✉️ Написать админу</button>' +
+      '<button class="nk-close" onclick="closeNoKeysModal()">Закрыть</button>' +
+    '</div>';
+  document.body.appendChild(ov);
+}
+function closeNoKeysModal() {
+  var ov = document.getElementById('noKeysOverlay');
+  if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+}
+function goTasksFromModal() { closeNoKeysModal(); go('s-tasks'); }
+function goSupportFromModal() { closeNoKeysModal(); openSupportScreen(); }
+
 function startReading(count, title) {
-  if (balance < 1) { showToast('Нет раскладов. Активируй код в Заданиях.'); return; }
-  state.count = count; state.title = title; state.cards = []; state.question = ''; state.drawn = false;
+  if (balance < 1) { openNoKeysModal(); return; }
+  state.count = count; state.title = title; state.cards = []; state.question = ''; state.drawn = false; state.finished = false;
   document.getElementById('rtitle').textContent = title;
   document.getElementById('carea').innerHTML = '';
   document.getElementById('qinput').value = '';
@@ -576,9 +648,10 @@ function startReading(count, title) {
   document.getElementById('qlocked').style.display = 'none';
   document.getElementById('interp').style.display = 'none';
   document.getElementById('interp').innerHTML = '';
+  document.getElementById('actionArea').style.display = 'none';
+  document.getElementById('actionArea').innerHTML = '';
   document.getElementById('dbtn').style.display = 'block';
   document.getElementById('dbtn').disabled = false;
-  document.getElementById('fbtn').style.display = 'none';
   document.getElementById('backFromReading').style.display = 'block';
   go('s-reading');
 }
@@ -608,8 +681,8 @@ function drawCards() {
   }
   setTimeout(function() {
     document.getElementById('dbtn').style.display = 'none';
-    document.getElementById('fbtn').style.display = 'block';
     showInterpretation();
+    showActionButtons();
   }, 400 + state.count * 150 + 900);
 }
 function showInterpretation() {
@@ -621,28 +694,75 @@ function showInterpretation() {
     var pos = positions[i] || ('Позиция ' + (i + 1));
     html += '<div class="interp-item"><div class="interp-pos">' + pos + '</div><div class="interp-name">' + card.n + '</div><div class="interp-meaning">' + card.m + '</div></div>';
   }
-  var advice = state.cards[state.cards.length - 1];
-  html += '<div class="summary"><div class="summary-title">Общий совет</div><div class="summary-text">' + advice.m + '</div></div>';
   interp.innerHTML = html;
   interp.style.display = 'block';
 }
-function finishReading() {
-  var cardsStr = '';
-  var cardNames = [];
+function showActionButtons() {
+  var area = document.getElementById('actionArea');
+  var html = '';
+
+  if (access > 0) {
+    html += '<button class="act-full" onclick="finishWithFull()">🔍 Полный разбор <span class="badge">−1 разбор</span></button>';
+  } else {
+    html += '<button class="act-full" onclick="showToast(\'Нет разборов. Активируй WM-код в Заданиях.\')" style="background:linear-gradient(135deg,#4a3a6a,#2a1f5e); box-shadow:none;">🔍 Полный разбор <span class="badge">нужен WM-код</span></button>';
+  }
+
+  html += '<div class="act-row">';
+  html += '<button class="act-secondary act-save" onclick="finishWithSave()">✅ Сохранить</button>';
+  html += '<button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button>';
+  html += '</div>';
+
+  area.innerHTML = html;
+  area.style.display = 'block';
+}
+
+function finishWithSave() {
+  if (state.finished) return;
+  state.finished = true;
+  var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
     cardsStr += state.cards[i].n;
     cardNames.push(state.cards[i].n);
   }
-  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question });
-  balance = Math.max(0, balance - 1);
-  document.getElementById('hBal').textContent = 'Раскладов: ' + balance;
-  document.getElementById('pvFree').textContent = balance;
+  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: '' });
   var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
-  if (tg && tg.sendData) {
-    try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-    catch(e) { showToast('Ошибка: ' + e.message); }
-  } else { showToast('Открой из Telegram'); }
+  sendAndClose(payload);
+}
+
+function finishWithFull() {
+  if (state.finished) return;
+  if (access < 1) { showToast('Нет разборов'); return; }
+  state.finished = true;
+  var cardsStr = '', cardNames = [];
+  for (var i = 0; i < state.cards.length; i++) {
+    if (i > 0) cardsStr += ', ';
+    cardsStr += state.cards[i].n;
+    cardNames.push(state.cards[i].n);
+  }
+  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full' });
+  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
+  sendAndClose(payload);
+}
+
+function finishWithAnother() {
+  var c = confirm('Текущий расклад не сохранён. Сделать новый?');
+  if (!c) return;
+  state.finished = false;
+  go('s-spread');
+}
+
+function sendAndClose(payload) {
+  var ov = document.createElement('div');
+  ov.className = 'success-overlay';
+  ov.innerHTML = '<div class="success-icon">✨</div><div class="success-text">Отправлено</div><div class="success-sub">Возвращаемся в бот...</div>';
+  document.body.appendChild(ov);
+  setTimeout(function() {
+    if (tg && tg.sendData) {
+      try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message); }
+    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram'); }
+  }, 900);
 }
 
 function loadHistory() {
@@ -675,10 +795,34 @@ function renderHistory() {
     html += '<div class="hist-cards">';
     var cs = h.cards || [];
     for (var j = 0; j < cs.length; j++) html += '<div class="hist-card">' + escapeHtml(cs[j]) + '</div>';
-    html += '</div></div>';
+    html += '</div>';
+    if (h.fb === 'yes') {
+      html += '<div class="hist-fb-result">✅ Сбылось</div>';
+    } else if (h.fb === 'no') {
+      html += '<div class="hist-fb-result" style="background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.3); color:#ef4444">❌ Не сбылось</div>';
+    } else if (h.fb === 'partly') {
+      html += '<div class="hist-fb-result" style="background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.3); color:#fbbf24">🟡 Частично</div>';
+    } else {
+      html += '<div class="hist-fb">';
+      html += '<button class="hist-fb-btn yes" onclick="markFb(' + i + ',\'yes\')">✅ Сбылось</button>';
+      html += '<button class="hist-fb-btn no" onclick="markFb(' + i + ',\'no\')">❌ Нет</button>';
+      html += '<button class="hist-fb-btn partly" onclick="markFb(' + i + ',\'partly\')">🟡 Частично</button>';
+      html += '</div>';
+    }
+    html += '</div>';
   }
   html += '<button class="hist-clear" onclick="clearHistory()">Очистить историю</button>';
   area.innerHTML = html;
+}
+function markFb(idx, result) {
+  try {
+    var a = loadHistory();
+    if (!a[idx]) return;
+    a[idx].fb = result;
+    localStorage.setItem(HIST_KEY, JSON.stringify(a));
+    renderHistory();
+    showToast(result === 'yes' ? '✅ Отмечено: сбылось' : (result === 'no' ? '❌ Отмечено: не сбылось' : '🟡 Отмечено: частично'));
+  } catch(e) {}
 }
 function openHistory() { renderHistory(); go('s-history'); }
 function clearHistory() {
