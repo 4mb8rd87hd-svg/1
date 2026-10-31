@@ -45,7 +45,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .btn.tasks .btn-icon { background:rgba(255,179,71,0.15); border-color:rgba(255,179,71,0.3); }
 .btn.back { background:rgba(255,127,80,0.08); border-color:rgba(255,127,80,0.3); }
 .btn.back .btn-icon { background:rgba(255,127,80,0.15); border-color:rgba(255,127,80,0.3); }
-.btn.share .btn-icon { background:rgba(74,222,128,0.15); border-color:rgba(74,222,128,0.3); }
 .spread-btn { width:100%; padding:14px 16px; margin-bottom:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; color:#fff; text-align:left; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:10px; }
 .spread-btn:active { transform:scale(0.98); background:rgba(255,127,80,0.1); border-color:rgba(255,179,71,0.5); }
 .spread-num { width:30px; height:30px; line-height:30px; text-align:center; background:linear-gradient(135deg, #ffb347, #ff7f50); border-radius:9px; font-weight:900; color:#08080f; flex-shrink:0; font-size:14px; }
@@ -74,8 +73,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .act-row { display:flex; gap:8px; margin-top:8px; }
 .act-secondary { flex:1; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
 .act-secondary:active { transform:scale(0.97); background:rgba(255,255,255,0.12); }
-.act-save { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.35); color:#4ade80; }
-.act-save:active { background:rgba(74,222,128,0.2); }
+.act-fb-title { font-size:15px; font-weight:800; color:#ffb347; text-align:center; margin:14px 0 8px; }
+.act-fb-row { display:flex; gap:6px; }
+.act-fb-btn { flex:1; padding:14px 6px; border-radius:12px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; border:1px solid; }
+.act-fb-btn.yes { background:rgba(74,222,128,0.15); border-color:rgba(74,222,128,0.4); color:#4ade80; }
+.act-fb-btn.no { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.4); color:#ef4444; }
+.act-fb-btn.partly { background:rgba(251,191,36,0.15); border-color:rgba(251,191,36,0.4); color:#fbbf24; }
+.act-fb-btn:active { transform:scale(0.96); }
 .q-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; font-family:inherit; margin:12px 0; resize:none; }
 .q-input::placeholder { color:rgba(255,255,255,0.35); }
 .q-input:focus { outline:none; border-color:rgba(255,179,71,0.5); }
@@ -152,6 +156,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .task-btn { width:100%; padding:12px; background:rgba(255,179,71,0.12); border:1px solid rgba(255,179,71,0.35); border-radius:10px; color:#ffb347; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:6px; }
 .task-btn:active { transform:scale(0.97); background:rgba(255,179,71,0.2); }
 .task-btn.primary { background:linear-gradient(135deg, #ffb347, #ff7f50); color:#08080f; border:none; }
+.task-btn.share-btn { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.4); color:#4ade80; }
 .ref-box { padding:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:8px; font-size:11px; font-family:monospace; color:#ffb347; word-break:break-all; margin-bottom:8px; }
 .promo-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:14px; font-family:inherit; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; }
 .promo-input::placeholder { color:rgba(255,255,255,0.3); text-transform:none; letter-spacing:normal; }
@@ -208,14 +213,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <button class="btn" onclick="openHistory()"><div class="btn-icon">📜</div><div class="btn-info"><div class="btn-title">История</div><div class="btn-desc">Прошлые расклады</div></div></button>
       <button class="btn tasks" onclick="go('s-tasks')"><div class="btn-icon">🎁</div><div class="btn-info"><div class="btn-title">Задания</div><div class="btn-desc">Бонусы, реферал, промокоды</div></div></button>
       <button class="btn support" onclick="openSupportScreen()"><div class="btn-icon">✉️</div><div class="btn-info"><div class="btn-title">Поддержка</div><div class="btn-desc">Написать админу</div></div></button>
-      <button class="btn share" onclick="shareBot()"><div class="btn-icon">📤</div><div class="btn-info"><div class="btn-title">Поделиться ботом</div><div class="btn-desc">Расскажи друзьям</div></div></button>
       <button class="btn back" onclick="backToBot()"><div class="btn-icon">⬅️</div><div class="btn-info"><div class="btn-title">Вернуться в бот</div><div class="btn-desc">Закрыть приложение</div></div></button>
     </div>
 
     <div class="screen" id="s-spread">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Выбери расклад</div>
-      <button class="spread-btn" onclick="startReading(1,'Одна карта')"><div class="spread-num">1</div><div><div class="btn-title">Одна карта</div><div class="btn-desc">Совет на сегодня</div></div></button>
+      <button class="spread-btn" onclick="startReading(1,'Одна карта')"><div class="spread-num">1</div><div><div class="btn-title">Одна карта</div><div class="btn-desc">Послание на сегодня</div></div></button>
       <button class="spread-btn" onclick="startReading(3,'Три карты')"><div class="spread-num">2</div><div><div class="btn-title">Три карты</div><div class="btn-desc">Прошлое · Настоящее · Будущее</div></div></button>
       <button class="spread-btn" onclick="startReading(5,'Крест')"><div class="spread-num">3</div><div><div class="btn-title">Крест</div><div class="btn-desc">5 карт · глубокий разбор</div></div></button>
       <button class="spread-btn" onclick="startReading(7,'Подкова')"><div class="spread-num">4</div><div><div class="btn-title">Подкова</div><div class="btn-desc">7 карт · ситуация</div></div></button>
@@ -273,6 +277,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <div class="task-head"><div class="task-icon">🔗</div><div class="task-title">Пригласи друга</div><div class="task-reward">+5</div></div>
         <div class="task-desc">За каждого друга, пришедшего по твоей ссылке, +5 раскладов. Приглашено: <span id="invCount">0</span> (заработано: <span id="invEarn">0</span>)</div>
         <div id="refBox"></div>
+        <button class="task-btn share-btn" onclick="shareBot()">📤 Поделиться ботом</button>
       </div>
       <div class="task-card">
         <div class="task-head"><div class="task-icon">🎟</div><div class="task-title">Промокод</div></div>
@@ -305,7 +310,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 var tg = window.Telegram ? window.Telegram.WebApp : null;
 if (tg) {
   try { tg.ready(); tg.expand(); } catch(e) {}
-  // FIX: цвет шапки под цвет фона аппа
   try { if (tg.setHeaderColor) tg.setHeaderColor('#08080f'); } catch(e) {}
 }
 
@@ -333,7 +337,7 @@ function getUserId() {
 }
 var HIST_KEY = 'youaura_hist_v1_' + getUserId();
 
-/* ===== ЗВУК + ФОНОВАЯ МУЗЫКА ===== */
+/* ===== АУДИО + МУЗЫКА ===== */
 var soundOn = true;
 try { soundOn = localStorage.getItem('youaura_sound') !== 'off'; } catch(e) {}
 var audioCtx = null;
@@ -342,10 +346,13 @@ var musicNodes = [];
 
 function initAudio() {
   if (audioCtx) {
-    if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch(e) {} }
+    if (audioCtx.state === 'suspended') { try { audioCtx.resume().catch(function(){}); } catch(e) {} }
     return;
   }
-  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') { try { audioCtx.resume().catch(function(){}); } catch(e) {} }
+  } catch(e) {}
 }
 function playTone(freq, dur, type, vol) {
   if (!soundOn) return;
@@ -369,32 +376,37 @@ function startMusic() {
   if (!soundOn) return;
   initAudio();
   if (!audioCtx) return;
-  if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch(e) {} }
   if (musicGain) return;
   try {
     musicGain = audioCtx.createGain();
     musicGain.gain.value = 0.001;
-    musicGain.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 2.5);
+    musicGain.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 2.5);
     musicGain.connect(audioCtx.destination);
     var filter = audioCtx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 550;
-    filter.Q.value = 0.7;
+    filter.frequency.value = 2000;
+    filter.Q.value = 0.5;
     filter.connect(musicGain);
-    var freqs = [55, 82.5, 110, 130.81, 164.81];
+    var freqs = [
+      { f: 164.81, type: 'sine',     vol: 0.22 },
+      { f: 220,    type: 'sine',     vol: 0.28 },
+      { f: 261.63, type: 'triangle', vol: 0.20 },
+      { f: 329.63, type: 'sine',     vol: 0.18 },
+      { f: 440,    type: 'sine',     vol: 0.14 }
+    ];
     for (var i = 0; i < freqs.length; i++) {
-      var f = freqs[i];
+      var fd = freqs[i];
       var osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = f;
-      osc.detune.value = (Math.random() - 0.5) * 6;
+      osc.type = fd.type;
+      osc.frequency.value = fd.f;
+      osc.detune.value = (Math.random() - 0.5) * 8;
       var g = audioCtx.createGain();
-      g.gain.value = 0.22 / (1 + i * 0.6);
+      g.gain.value = fd.vol;
       var lfo = audioCtx.createOscillator();
       lfo.type = 'sine';
       lfo.frequency.value = 0.04 + Math.random() * 0.08;
       var lfoG = audioCtx.createGain();
-      lfoG.gain.value = 0.10 / (1 + i * 0.6);
+      lfoG.gain.value = fd.vol * 0.4;
       lfo.connect(lfoG);
       lfoG.connect(g.gain);
       osc.connect(g);
@@ -403,7 +415,28 @@ function startMusic() {
       lfo.start();
       musicNodes.push(osc, lfo);
     }
+    setTimeout(scheduleMelody, 4000);
   } catch(e) { musicGain = null; }
+}
+function scheduleMelody() {
+  if (!soundOn || !musicGain || !audioCtx) return;
+  var notes = [440, 523.25, 587.33, 659.25, 783.99];
+  var note = notes[Math.floor(Math.random() * notes.length)];
+  var dur = 2 + Math.random() * 2;
+  try {
+    var osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = note;
+    var g = audioCtx.createGain();
+    g.gain.value = 0.001;
+    g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 0.3);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(g);
+    g.connect(musicGain);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur + 0.1);
+  } catch(e) {}
+  setTimeout(scheduleMelody, 7000 + Math.random() * 11000);
 }
 function stopMusic() {
   if (!audioCtx || !musicGain) { musicNodes = []; musicGain = null; return; }
@@ -439,14 +472,10 @@ function toggleSound() {
   else { stopMusic(); }
   haptic('light');
 }
-document.body.addEventListener('touchstart', function onT() {
-  initAudio(); startMusic();
-  document.body.removeEventListener('touchstart', onT);
-}, {once: true});
-document.body.addEventListener('click', function onC() {
-  initAudio(); startMusic();
-  document.body.removeEventListener('click', onC);
-}, {once: true});
+function tryEnableAudio() { initAudio(); startMusic(); }
+document.addEventListener('touchstart', tryEnableAudio, {passive: true});
+document.addEventListener('click', tryEnableAudio);
+document.addEventListener('pointerdown', tryEnableAudio);
 
 function askConfirm(text, onYes) {
   if (tg && tg.showConfirm) {
@@ -465,7 +494,6 @@ document.getElementById('pvRead').textContent = readings;
 document.getElementById('pn').textContent = userName;
 updateSoundIcon();
 
-// FIX: fallback аватара — 🌙 если нет имени/фото
 (function applyAvatar() {
   var avEl = document.getElementById('av');
   var url = (tgUser && tgUser.photo_url) ? tgUser.photo_url : '';
@@ -635,14 +663,13 @@ var CARDS = [
   {n:'Король Пентаклей', m:'Успех, стабильность. Владей ресурсами.', img:RWS+'Pents14.jpg'}
 ];
 var POSITIONS = {
-  1: ['Совет'],
+  1: ['Значение'],
   3: ['Прошлое', 'Настоящее', 'Будущее'],
-  5: ['Суть', 'Причина', 'Итог', 'Блок', 'Совет'],
-  7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Совет', 'Итог'],
+  5: ['Суть', 'Причина', 'Итог', 'Блок', 'Значение'],
+  7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Значение', 'Итог'],
   10: ['Суть', 'Препятствие', 'Основа', 'Прошлое', 'Цель', 'Будущее', 'Вы', 'Окружение', 'Надежды и страхи', 'Итог']
 };
 
-// FIX: предзагрузка топ-10 карт для мгновенного первого расклада
 (function preloadPopular() {
   var popular = ['RWS_Tarot_00_Fool.jpg','RWS_Tarot_01_Magician.jpg','RWS_Tarot_02_High_Priestess.jpg','RWS_Tarot_03_Empress.jpg','RWS_Tarot_04_Emperor.jpg','RWS_Tarot_06_Lovers.jpg','RWS_Tarot_10_Wheel_of_Fortune.jpg','RWS_Tarot_13_Death.jpg','RWS_Tarot_17_Star.jpg','RWS_Tarot_19_Sun.jpg'];
   for (var i = 0; i < popular.length; i++) { try { var im = new Image(); im.src = RWS + popular[i]; } catch(e) {} }
@@ -691,8 +718,6 @@ function redeemCode() {
     catch(e) { showToast('Ошибка: ' + e.message, true); }
   }
 }
-
-// FIX: поделиться ботом
 function shareBot() {
   if (!botName) { showToast('Ссылка на бота не настроена', true); return; }
   var link = 'https://t.me/' + botName;
@@ -702,7 +727,6 @@ function shareBot() {
   if (tg && tg.openTelegramLink) { try { tg.openTelegramLink(shareUrl); return; } catch(e) {} }
   window.open(shareUrl, '_blank');
 }
-// FIX: поделиться результатом расклада
 function shareResult() {
   if (!state.cards.length) { showToast('Сначала вытяни карты', true); return; }
   var mainCard = state.cards[0].n;
@@ -749,6 +773,7 @@ function startReading(count, title) {
   document.getElementById('backFromReading').style.display = 'block';
   go('s-reading');
 }
+
 function drawCards() {
   if (state.drawn) return;
   haptic('medium');
@@ -769,7 +794,6 @@ function drawCards() {
     var card = CARDS[idx]; state.cards.push(card);
     var el = document.createElement('div');
     el.className = 'card';
-    // FIX: lazy + async decoding
     var front = '<img loading="lazy" decoding="async" src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div style="font-size:13px;color:#ffb347;font-weight:800;padding:4px;text-align:center">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
     el.innerHTML = '<div class="card-face card-back">*</div><div class="card-face card-front">' + front + '</div>';
     area.appendChild(el);
@@ -778,10 +802,19 @@ function drawCards() {
   setTimeout(function() {
     document.getElementById('dbtn').style.display = 'none';
     showInterpretation();
+    // Автосохранение в localStorage (fb пустой, ждёт отметки)
+    autoSaveSpreadToHistory();
     showActionButtons();
     haptic('success');
   }, 400 + state.count * 150 + 900);
 }
+
+function autoSaveSpreadToHistory() {
+  var cardNames = [];
+  for (var i = 0; i < state.cards.length; i++) cardNames.push(state.cards[i].n);
+  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: '', synced: false });
+}
+
 function showInterpretation() {
   var interp = document.getElementById('interp');
   var positions = POSITIONS[state.count] || [];
@@ -794,64 +827,97 @@ function showInterpretation() {
   interp.innerHTML = html;
   interp.style.display = 'block';
 }
+
 function showActionButtons() {
   var area = document.getElementById('actionArea');
   var html = '';
-  if (access > 0) {
+
+  // Если balance > 0 — показываем кнопки сбываемости
+  if (balance >= 1) {
+    html += '<div class="act-fb-title">📊 Сбылось?</div>';
+    html += '<div class="act-fb-row">';
+    html += '<button class="act-fb-btn yes" onclick="markFbAndClose(\'yes\')">✅ Сбылось</button>';
+    html += '<button class="act-fb-btn no" onclick="markFbAndClose(\'no\')">❌ Нет</button>';
+    html += '<button class="act-fb-btn partly" onclick="markFbAndClose(\'partly\')">🟡 Частично</button>';
+    html += '</div>';
+  }
+
+  // Полный разбор
+  if (access >= 1) {
     html += '<button class="act-full" onclick="finishWithFull()">🔍 Полный разбор <span class="badge">−1 разбор</span></button>';
-  } else {
-    html += '<button class="act-full" onclick="showToast(\'Нет разборов. Активируй WM-код в Заданиях.\', true)" style="background:linear-gradient(135deg,#4a3a6a,#2a1f5e); box-shadow:none;">🔍 Полный разбор <span class="badge">нужен WM-код</span></button>';
+  } else if (balance >= 1) {
+    html += '<button class="act-full" onclick="showToast(\'Нет разборов. Активируй WM-код.\', true)" style="background:linear-gradient(135deg,#4a3a6a,#2a1f5e); box-shadow:none;">🔍 Полный разбор <span class="badge">нужен WM</span></button>';
   }
-  var saveBtn;
-  if (balance > 0) {
-    saveBtn = '<button class="act-secondary act-save" onclick="finishWithSave()">✅ Сохранить</button>';
-  } else {
-    saveBtn = '<button class="act-secondary act-save" onclick="showToast(\'Нет раскладов для сохранения — нужен GIFT/WM\', true)" style="opacity:0.5">✅ Сохранить</button>';
-  }
-  html += '<div class="act-row">' + saveBtn + '<button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button></div>';
-  // FIX: кнопка "Поделиться" результатом
-  html += '<div class="act-row"><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
+
+  // Второстепенные
+  html += '<div class="act-row"><button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
+
   area.innerHTML = html;
   area.style.display = 'block';
 }
 
-function finishWithSave() {
+function markFbAndClose(fbType) {
   if (state.finished) return;
-  if (balance < 1) { showToast('Нет раскладов для сохранения — нужен GIFT/WM', true); return; }
+  if (balance < 1) { showToast('Нет раскладов', true); return; }
   state.finished = true;
-  var cardsStr = '', cardNames = [];
+
+  // Обновляем fb в записи истории (она уже создана в autoSaveSpreadToHistory)
+  try {
+    var arr = loadHistory();
+    if (arr.length > 0 && arr[0].fb === '') {
+      arr[0].fb = fbType;
+      arr[0].synced = true; // бот получит метрику в payload
+      localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+    }
+  } catch(e) {}
+
+  var cardsStr = '';
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
     cardsStr += state.cards[i].n;
-    cardNames.push(state.cards[i].n);
   }
-  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: '', synced: true });
+
   balance = Math.max(0, balance - 1);
   document.getElementById('hBal').textContent = '🎟 ' + balance;
   document.getElementById('pvFree').textContent = balance;
-  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
-  sendAndClose(payload, '✨', 'Расклад сохранён');
+
+  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fbType;
+
+  var iconMap = { 'yes': '✅', 'no': '❌', 'partly': '🟡' };
+  var textMap = { 'yes': 'Сбылось!', 'no': 'Отмечено', 'partly': 'Частично' };
+
+  sendAndClose(payload, iconMap[fbType] || '✨', textMap[fbType] || 'Сохранено');
 }
 
 function finishWithFull() {
   if (state.finished) return;
   if (access < 1) { showToast('Нет разборов', true); return; }
   state.finished = true;
-  var cardsStr = '', cardNames = [];
+
+  try {
+    var arr = loadHistory();
+    if (arr.length > 0 && arr[0].fb === '') {
+      arr[0].fb = 'full';
+      arr[0].synced = true;
+      localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+    }
+  } catch(e) {}
+
+  var cardsStr = '';
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
     cardsStr += state.cards[i].n;
-    cardNames.push(state.cards[i].n);
   }
-  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
+
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
+
   var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
 function finishWithAnother() {
-  askConfirm('Текущий расклад не сохранён. Сделать новый?', function() {
+  askConfirm('Текущий расклад не отмечен. Сделать новый?', function() {
     soundPop(); haptic('light');
     state.finished = false;
     state.drawn = false;
@@ -866,196 +932,4 @@ function sendAndClose(payload, icon, text) {
   ov.innerHTML = '<div class="success-icon">' + (icon || '✨') + '</div><div class="success-text">' + (text || 'Отправлено') + '</div><div class="success-sub">Возвращаемся в бот...</div>';
   document.body.appendChild(ov);
   setTimeout(function() {
-    if (tg && tg.sendData) {
-      try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
-    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
-  }, 900);
-}
-
-function loadHistory() {
-  try { var raw = localStorage.getItem(HIST_KEY); if (!raw) return []; var a = JSON.parse(raw); return Array.isArray(a) ? a : []; }
-  catch(e) { return []; }
-}
-function saveHistoryEntry(e) {
-  try { var a = loadHistory(); a.unshift(e); if (a.length > 50) a = a.slice(0, 50); localStorage.setItem(HIST_KEY, JSON.stringify(a)); }
-  catch(err) {}
-}
-function getUnsyncedCounts() {
-  var arr = loadHistory();
-  var yes = 0, no = 0, partly = 0, total = 0;
-  for (var i = 0; i < arr.length; i++) {
-    var h = arr[i];
-    if ((h.fb === 'yes' || h.fb === 'no' || h.fb === 'partly') && h.synced !== true) {
-      total++;
-      if (h.fb === 'yes') yes++;
-      else if (h.fb === 'no') no++;
-      else partly++;
-    }
-  }
-  return { yes: yes, no: no, partly: partly, total: total };
-}
-function markAllSynced() {
-  try {
-    var arr = loadHistory();
-    for (var i = 0; i < arr.length; i++) {
-      if (arr[i].fb === 'yes' || arr[i].fb === 'no' || arr[i].fb === 'partly') arr[i].synced = true;
-    }
-    localStorage.setItem(HIST_KEY, JSON.stringify(arr));
-  } catch(e) {}
-}
-function pad2(n) { return n < 10 ? '0' + n : String(n); }
-function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function renderHistory() {
-  var arr = loadHistory();
-  var area = document.getElementById('histArea');
-  var unsync = getUnsyncedCounts();
-  var topHtml = '';
-  if (unsync.total > 0) {
-    topHtml = '<div class="sync-banner"><div class="sb-text">📤 ' + unsync.total + ' отметок не отправлены в бот</div><button class="sb-btn" onclick="syncHistory()">Синхронизировать</button></div>';
-  }
-  if (!arr.length) {
-    area.innerHTML = topHtml + '<div class="hist-empty">Пока нет раскладов.<br>Сделай первый - он появится здесь.</div>';
-    return;
-  }
-  var html = topHtml;
-  for (var i = 0; i < arr.length; i++) {
-    var h = arr[i]; var d = new Date(h.ts || 0);
-    var ds = pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
-    html += '<div class="hist-item"><div class="hist-date">' + ds + '</div><div class="hist-title">' + escapeHtml(h.title || '?') + ' · ' + (h.count || 0) + ' карт</div>';
-    if (h.question && h.question !== 'без вопроса') html += '<div class="hist-q">«' + escapeHtml(h.question) + '»</div>';
-    html += '<div class="hist-cards">';
-    var cs = h.cards || [];
-    for (var j = 0; j < cs.length; j++) html += '<div class="hist-card">' + escapeHtml(cs[j]) + '</div>';
-    html += '</div>';
-    if (h.fb === 'yes') {
-      html += '<div class="hist-fb-result">✅ Сбылось</div>';
-      if (h.synced !== true) html += '<div class="hist-unsync">📤 не отправлено в бот</div>';
-    } else if (h.fb === 'no') {
-      html += '<div class="hist-fb-result" style="background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.3); color:#ef4444">❌ Не сбылось</div>';
-      if (h.synced !== true) html += '<div class="hist-unsync">📤 не отправлено в бот</div>';
-    } else if (h.fb === 'partly') {
-      html += '<div class="hist-fb-result" style="background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.3); color:#fbbf24">🟡 Частично</div>';
-      if (h.synced !== true) html += '<div class="hist-unsync">📤 не отправлено в бот</div>';
-    } else if (h.fb === 'full') {
-      html += '<div class="hist-fb-result" style="background:rgba(167,139,250,0.1); border-color:rgba(167,139,250,0.3); color:#a78bfa">🔍 Полный разбор</div>';
-    } else {
-      html += '<div class="hist-fb"><button class="hist-fb-btn yes" onclick="markFb(' + i + ',\'yes\')">✅ Сбылось</button><button class="hist-fb-btn no" onclick="markFb(' + i + ',\'no\')">❌ Нет</button><button class="hist-fb-btn partly" onclick="markFb(' + i + ',\'partly\')">🟡 Частично</button></div>';
-    }
-    // FIX: кнопка "Повторить"
-    html += '<button class="hist-repeat" onclick="repeatSpread(' + i + ')">🔁 Повторить расклад</button>';
-    html += '</div>';
-  }
-  html += '<button class="hist-clear" onclick="clearHistory()">Очистить историю</button>';
-  area.innerHTML = html;
-}
-// FIX: повтор расклада из истории — сразу открывает форму с тем же count и вопросом
-function repeatSpread(idx) {
-  var arr = loadHistory();
-  if (!arr[idx]) return;
-  var h = arr[idx];
-  if (balance < 1 && access < 1) { openNoKeysModal(); return; }
-  var count = (h.cards && h.cards.length) || 1;
-  var title = h.title || 'Расклад';
-  startReading(count, title);
-  if (h.question && h.question !== 'без вопроса') {
-    var qi = document.getElementById('qinput');
-    if (qi) qi.value = h.question;
-  }
-}
-function markFb(idx, result) {
-  try {
-    var a = loadHistory();
-    if (!a[idx]) return;
-    a[idx].fb = result;
-    a[idx].synced = false;
-    localStorage.setItem(HIST_KEY, JSON.stringify(a));
-    renderHistory();
-    if (result === 'yes') { showToast('✅ Отмечено: сбылось'); haptic('success'); }
-    else if (result === 'no') { showToast('❌ Отмечено: не сбылось'); haptic('light'); }
-    else { showToast('🟡 Отмечено: частично'); haptic('light'); }
-  } catch(e) {}
-}
-function syncHistory() {
-  var unsync = getUnsyncedCounts();
-  if (unsync.total === 0) { showToast('Всё синхронизировано'); return; }
-  var payload = 'sync_fb|' + unsync.yes + '|' + unsync.no + '|' + unsync.partly;
-  var ov = document.createElement('div');
-  ov.className = 'success-overlay';
-  ov.innerHTML = '<div class="success-icon">📤</div><div class="success-text">Синхронизация</div><div class="success-sub">Отправляем ' + unsync.total + ' отметок...</div>';
-  document.body.appendChild(ov);
-  soundSuccess(); haptic('success');
-  setTimeout(function() {
-    try {
-      tg.sendData(payload);
-      markAllSynced();
-      setTimeout(function(){ try { tg.close(); } catch(e){} }, 100);
-    } catch(e) {
-      if (ov.parentNode) ov.parentNode.removeChild(ov);
-      showToast('Ошибка: ' + e.message, true);
-    }
-  }, 900);
-}
-function openHistory() { renderHistory(); go('s-history'); }
-function clearHistory() {
-  askConfirm('Удалить всю историю?', function() {
-    try { localStorage.removeItem(HIST_KEY); } catch(e) {}
-    renderHistory(); showToast('Очищено');
-  });
-}
-
-function openSupportScreen() {
-  document.getElementById('supportText').value = '';
-  document.getElementById('supLen').textContent = '0';
-  go('s-support');
-}
-function updateSupportCounter() {
-  document.getElementById('supLen').textContent = String(document.getElementById('supportText').value.length);
-}
-function sendSupport() {
-  var text = document.getElementById('supportText').value.trim();
-  if (text.length < 2) { showToast('Напиши сообщение', true); return; }
-  text = text.replace(/\|/g, ' ').replace(/\n+/g, ' ').substring(0, 500);
-  var ov = document.createElement('div');
-  ov.className = 'success-overlay';
-  ov.innerHTML = '<div class="success-icon">✅</div><div class="success-text">Отправлено</div><div class="success-sub">Возвращаемся в бот...</div>';
-  document.body.appendChild(ov);
-  soundSuccess(); haptic('success');
-  setTimeout(function() {
-    if (tg && tg.sendData) {
-      try { tg.sendData('support|' + text); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
-    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
-  }, 1000);
-}
-
-function backToBot() {
-  var unsync = getUnsyncedCounts();
-  var payload;
-  if (unsync.total > 0) {
-    payload = 'back|' + unsync.yes + '|' + unsync.no + '|' + unsync.partly;
-  } else {
-    payload = 'back|||';
-  }
-  if (tg && tg.sendData) {
-    try {
-      tg.sendData(payload);
-      if (unsync.total > 0) markAllSynced();
-      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
-    }
-    catch(e) { showToast('Ошибка', true); }
-  } else { showToast('Открой из Telegram', true); }
-}
-
-function drawDaily() {
-  haptic('medium');
-  var card = CARDS[Math.floor(Math.random() * CARDS.length)];
-  var html = '<img loading="lazy" decoding="async" class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
-  html += '<div class="daily-name">' + card.n + '</div><div class="daily-meaning">' + card.m + '</div>';
-  document.getElementById('dbox').innerHTML = html;
-  go('s-result');
-  setTimeout(function(){ soundSuccess(); }, 300);
-}
-</script>
-</body>
-</html>
+    if (tg && tg
