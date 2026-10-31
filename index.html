@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#08080f">
 <title>YouAura Test</title>
 <style>
@@ -16,12 +15,14 @@ html, body {
   overflow: hidden;
   user-select: none;
 }
-.app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 20px; padding-top: max(20px, env(safe-area-inset-top)); }
-.hero { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin: 20px 0 8px; }
-.gradient { background: linear-gradient(135deg, #fff 0%, #ffb347 60%, #ff7f50 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.subtitle { font-size: 14px; color: rgba(255,255,255,0.55); margin-bottom: 30px; }
+.app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 20px; padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+.content { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+.content::-webkit-scrollbar { display: none; }
+.hero { font-size: 30px; font-weight: 900; letter-spacing: -1px; margin: 16px 0 8px; }
+.gradient { background: linear-gradient(135deg, #fff 0%, #ffb347 60%, #ff7f50 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.subtitle { font-size: 14px; color: rgba(255,255,255,0.55); margin-bottom: 24px; line-height: 1.4; }
 .menu-btn {
-  width: 100%; padding: 18px; margin-bottom: 10px;
+  width: 100%; padding: 16px; margin-bottom: 10px;
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px; color: #fff; font-size: 15px; font-weight: 700;
   text-align: left; display: flex; align-items: center; gap: 14px;
@@ -34,6 +35,8 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   font-size: 22px; flex-shrink: 0;
 }
+.menu-btn.back { background: rgba(255,127,80,0.08); border-color: rgba(255,127,80,0.3); }
+.menu-btn.back .icon-box { background: rgba(255,127,80,0.15); border-color: rgba(255,127,80,0.3); }
 .spread-card {
   width: 100%; padding: 16px 18px; margin-bottom: 10px;
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
@@ -46,10 +49,13 @@ html, body {
   background: linear-gradient(135deg, #ffb347, #ff7f50);
   border-radius: 10px; font-weight: 900; color: #08080f; flex-shrink: 0;
 }
+.spread-card .sc-title { font-weight: 800; font-size: 15px; }
+.spread-card .sc-desc { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
 .back-btn { padding: 8px 0; background: none; border: none; color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 8px; font-family: inherit; }
 .section-title { font-size: 26px; font-weight: 900; letter-spacing: -0.8px; margin: 8px 0 6px; }
 .screen { display: none; }
-.screen.active { display: block; }
+.screen.active { display: block; animation: fade 0.4s; }
+@keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .cards-area { display: flex; justify-content: center; gap: 10px; margin: 24px 0; flex-wrap: wrap; min-height: 180px; perspective: 1000px; }
 .tarot-card { width: 80px; height: 135px; position: relative; transform-style: preserve-3d; transition: transform 0.8s; animation: enter 0.5s backwards; }
 @keyframes enter { from { opacity: 0; transform: translateY(30px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -62,60 +68,87 @@ html, body {
 .card-front .card-symbol { font-size: 40px; }
 .card-front .card-name { font-size: 10px; font-weight: 800; color: #ffb347; margin-top: 8px; text-transform: uppercase; text-align: center; }
 .card-front .card-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 4px 4px; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.9)); color: #ffb347; font-size: 9px; font-weight: 800; text-align: center; text-transform: uppercase; }
-.cta-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffb347, #ff7f50); border: none; border-radius: 18px; color: #08080f; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 16px; font-family: inherit; box-shadow: 0 8px 30px rgba(255,127,80,0.4); }
+.cta-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffb347, #ff7f50); border: none; border-radius: 18px; color: #08080f; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 12px; font-family: inherit; box-shadow: 0 8px 30px rgba(255,127,80,0.4); }
 .cta-btn:active { transform: scale(0.97); }
 .cta-btn:disabled { opacity: 0.4; }
 .cta-btn.secondary { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1); box-shadow: none; }
 .question-input { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; color: #fff; font-size: 15px; font-family: inherit; margin: 16px 0; resize: none; }
 .question-input::placeholder { color: rgba(255,255,255,0.35); }
 .question-input:focus { outline: none; border-color: rgba(255,179,71,0.5); }
-.content { flex: 1; overflow-y: auto; padding-bottom: 40px; }
-.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, #ffb347, #ff7f50); color: #08080f; padding: 14px 24px; border-radius: 100px; font-weight: 800; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 99; pointer-events: none; }
+.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, #ffb347, #ff7f50); color: #08080f; padding: 14px 24px; border-radius: 100px; font-weight: 800; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 99; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.daily-box { text-align: center; padding: 30px 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,179,71,0.25); border-radius: 22px; margin-top: 20px; }
+.daily-img { width: 160px; height: 270px; object-fit: cover; border-radius: 14px; border: 2px solid rgba(255,179,71,0.7); margin-bottom: 16px; box-shadow: 0 12px 40px rgba(255,179,71,0.4); }
+.daily-name { font-size: 24px; font-weight: 900; color: #ffb347; margin-bottom: 8px; }
+.daily-meaning { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.5; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="content">
+    <!-- HOME -->
     <div class="screen active" id="s-home">
-      <div class="hero">Привет ✨<br><span class="gradient">Карты ждут</span></div>
-      <div class="subtitle">Тестовая версия мини-аппа</div>
+      <div class="hero">✨ Тест<br><span class="gradient">Мини-приложение</span></div>
+      <div class="subtitle">Тестовая версия. Основной бот работает как обычно.</div>
       
       <button class="menu-btn" onclick="go('s-spread')">
         <div class="icon-box">🔮</div>
-        <div>Сделать расклад<br><span style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:500">5 видов</span></div>
+        <div><div style="font-weight:800">Сделать расклад</div><div style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:500;margin-top:2px">5 видов · 22 карты</div></div>
       </button>
       
       <button class="menu-btn" onclick="drawDaily()">
         <div class="icon-box">🌅</div>
-        <div>Карта дня<br><span style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:500">Прогноз</span></div>
+        <div><div style="font-weight:800">Карта дня</div><div style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:500;margin-top:2px">Прогноз на сегодня</div></div>
+      </button>
+      
+      <button class="menu-btn back" onclick="backToBot()">
+        <div class="icon-box">⬅️</div>
+        <div><div style="font-weight:800">Вернуться в бот</div><div style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:500;margin-top:2px">Закрыть мини-апп</div></div>
       </button>
     </div>
     
+    <!-- SPREAD SELECT -->
     <div class="screen" id="s-spread">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
-      <div class="section-title">Расклад</div>
+      <div class="section-title">Выбери расклад</div>
       
-      <div class="spread-card" onclick="startReading(1,'Одна карта')"><div class="num">1</div><div>Одна карта</div></div>
-      <div class="spread-card" onclick="startReading(3,'Три карты')"><div class="num">2</div><div>Три карты</div></div>
-      <div class="spread-card" onclick="startReading(5,'Крест')"><div class="num">3</div><div>Крест (5)</div></div>
-      <div class="spread-card" onclick="startReading(7,'Подкова')"><div class="num">4</div><div>Подкова (7)</div></div>
-      <div class="spread-card" onclick="startReading(10,'Кельтский крест')"><div class="num">5</div><div>Кельтский крест (10)</div></div>
+      <div class="spread-card" onclick="startReading(1,'Одна карта','Совет на сегодня')">
+        <div class="num">1</div>
+        <div><div class="sc-title">Одна карта</div><div class="sc-desc">Совет на сегодня</div></div>
+      </div>
+      <div class="spread-card" onclick="startReading(3,'Три карты','Прошлое · Настоящее · Будущее')">
+        <div class="num">2</div>
+        <div><div class="sc-title">Три карты</div><div class="sc-desc">Прошлое · Настоящее · Будущее</div></div>
+      </div>
+      <div class="spread-card" onclick="startReading(5,'Крест','5 карт')">
+        <div class="num">3</div>
+        <div><div class="sc-title">Крест</div><div class="sc-desc">Суть · Причина · Итог · Блок · Совет</div></div>
+      </div>
+      <div class="spread-card" onclick="startReading(7,'Подкова','7 карт')">
+        <div class="num">4</div>
+        <div><div class="sc-title">Подкова</div><div class="sc-desc">Глубокий разбор</div></div>
+      </div>
+      <div class="spread-card" onclick="startReading(10,'Кельтский крест','10 карт')">
+        <div class="num">5</div>
+        <div><div class="sc-title">Кельтский крест</div><div class="sc-desc">Полная картина</div></div>
+      </div>
     </div>
     
+    <!-- READING -->
     <div class="screen" id="s-reading">
       <button class="back-btn" onclick="go('s-spread')">‹ Назад</button>
       <div class="section-title" id="rtitle">Расклад</div>
       <textarea class="question-input" id="qinput" placeholder="Твой вопрос... (необязательно)" rows="2"></textarea>
       <div class="cards-area" id="carea"></div>
-      <button class="cta-btn" id="dbtn" onclick="drawCards()">Вытянуть</button>
-      <button class="cta-btn secondary" id="fbtn" onclick="finishReading()" style="display:none">Отправить в бот</button>
+      <button class="cta-btn" id="dbtn" onclick="drawCards()">Вытянуть карты</button>
+      <button class="cta-btn" id="fbtn" onclick="finishReading()" style="display:none">Отправить в бот</button>
     </div>
     
+    <!-- DAILY -->
     <div class="screen" id="s-result">
       <button class="back-btn" onclick="go('s-home')">‹ На главную</button>
-      <div class="section-title" id="dailyTitle">Карта дня</div>
-      <div class="result-box" id="dbox" style="text-align:center;padding:30px"></div>
+      <div class="section-title">🌅 Карта дня</div>
+      <div class="daily-box" id="dbox"></div>
     </div>
   </div>
 </div>
@@ -123,61 +156,52 @@ html, body {
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-const tg = window.Telegram ? window.Telegram.WebApp : null;
+var tg = window.Telegram ? window.Telegram.WebApp : null;
 if (tg) { try { tg.ready(); tg.expand(); } catch(e) {} }
 
-const RWS = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
+var RWS = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
 
-const CARDS = [
-  {n:'Шут', s:'🌟', img:RWS+'RWS_Tarot_00_Fool.jpg'},
-  {n:'Маг', s:'🎩', img:RWS+'RWS_Tarot_01_Magician.jpg'},
-  {n:'Верховная Жрица', s:'🌙', img:RWS+'RWS_Tarot_02_High_Priestess.jpg'},
-  {n:'Императрица', s:'🌺', img:RWS+'RWS_Tarot_03_Empress.jpg'},
-  {n:'Император', s:'👑', img:RWS+'RWS_Tarot_04_Emperor.jpg'},
-  {n:'Иерофант', s:'📿', img:RWS+'RWS_Tarot_05_Hierophant.jpg'},
-  {n:'Влюблённые', s:'💕', img:RWS+'RWS_Tarot_06_Lovers.jpg'},
-  {n:'Колесница', s:'⚡', img:RWS+'RWS_Tarot_07_Chariot.jpg'},
-  {n:'Сила', s:'🦁', img:RWS+'RWS_Tarot_08_Strength.jpg'},
-  {n:'Отшельник', s:'🕯️', img:RWS+'RWS_Tarot_09_Hermit.jpg'},
-  {n:'Колесо Фортуны', s:'🎡', img:RWS+'RWS_Tarot_10_Wheel_of_Fortune.jpg'},
-  {n:'Правосудие', s:'⚖️', img:RWS+'RWS_Tarot_11_Justice.jpg'},
-  {n:'Повешенный', s:'🙃', img:RWS+'RWS_Tarot_12_Hanged_Man.jpg'},
-  {n:'Смерть', s:'🦋', img:RWS+'RWS_Tarot_13_Death.jpg'},
-  {n:'Умеренность', s:'🕊️', img:RWS+'RWS_Tarot_14_Temperance.jpg'},
-  {n:'Дьявол', s:'🔥', img:RWS+'RWS_Tarot_15_Devil.jpg'},
-  {n:'Башня', s:'🗼', img:RWS+'RWS_Tarot_16_Tower.jpg'},
-  {n:'Звезда', s:'⭐', img:RWS+'RWS_Tarot_17_Star.jpg'},
-  {n:'Луна', s:'🌕', img:RWS+'RWS_Tarot_18_Moon.jpg'},
-  {n:'Солнце', s:'☀️', img:RWS+'RWS_Tarot_19_Sun.jpg'},
-  {n:'Суд', s:'📢', img:RWS+'RWS_Tarot_20_Judgement.jpg'},
-  {n:'Мир', s:'🌍', img:RWS+'RWS_Tarot_21_World.jpg'},
-  {n:'Туз Жезлов', s:'🪄'},
-  {n:'Двойка Жезлов', s:'🌱'},
-  {n:'Тройка Жезлов', s:'🚀'},
-  {n:'Тройка Кубков', s:'🥂'},
-  {n:'Десятка Кубков', s:'🏡'},
-  {n:'Туз Мечей', s:'⚔️'},
-  {n:'Тройка Мечей', s:'💔'},
-  {n:'Туз Пентаклей', s:'💎'},
-  {n:'Восьмёрка Пентаклей', s:'🔨'},
-  {n:'Десятка Пентаклей', s:'💰'}
+var CARDS = [
+  {n:'Шут', s:'🌟', m:'Начало, риск', img:RWS+'RWS_Tarot_00_Fool.jpg'},
+  {n:'Маг', s:'🎩', m:'Воля, мастерство', img:RWS+'RWS_Tarot_01_Magician.jpg'},
+  {n:'Верховная Жрица', s:'🌙', m:'Тайна, интуиция', img:RWS+'RWS_Tarot_02_High_Priestess.jpg'},
+  {n:'Императрица', s:'🌺', m:'Плодородие, забота', img:RWS+'RWS_Tarot_03_Empress.jpg'},
+  {n:'Император', s:'👑', m:'Структура, власть', img:RWS+'RWS_Tarot_04_Emperor.jpg'},
+  {n:'Иерофант', s:'📿', m:'Традиция', img:RWS+'RWS_Tarot_05_Hierophant.jpg'},
+  {n:'Влюблённые', s:'💕', m:'Выбор, союз', img:RWS+'RWS_Tarot_06_Lovers.jpg'},
+  {n:'Колесница', s:'⚡', m:'Победа', img:RWS+'RWS_Tarot_07_Chariot.jpg'},
+  {n:'Сила', s:'🦁', m:'Терпение', img:RWS+'RWS_Tarot_08_Strength.jpg'},
+  {n:'Отшельник', s:'🕯️', m:'Поиск, мудрость', img:RWS+'RWS_Tarot_09_Hermit.jpg'},
+  {n:'Колесо Фортуны', s:'🎡', m:'Циклы, судьба', img:RWS+'RWS_Tarot_10_Wheel_of_Fortune.jpg'},
+  {n:'Правосудие', s:'⚖️', m:'Баланс, закон', img:RWS+'RWS_Tarot_11_Justice.jpg'},
+  {n:'Повешенный', s:'🙃', m:'Пауза', img:RWS+'RWS_Tarot_12_Hanged_Man.jpg'},
+  {n:'Смерть', s:'🦋', m:'Трансформация', img:RWS+'RWS_Tarot_13_Death.jpg'},
+  {n:'Умеренность', s:'🕊️', m:'Гармония', img:RWS+'RWS_Tarot_14_Temperance.jpg'},
+  {n:'Дьявол', s:'🔥', m:'Соблазн', img:RWS+'RWS_Tarot_15_Devil.jpg'},
+  {n:'Башня', s:'🗼', m:'Крах, свобода', img:RWS+'RWS_Tarot_16_Tower.jpg'},
+  {n:'Звезда', s:'⭐', m:'Надежда', img:RWS+'RWS_Tarot_17_Star.jpg'},
+  {n:'Луна', s:'🌕', m:'Иллюзии', img:RWS+'RWS_Tarot_18_Moon.jpg'},
+  {n:'Солнце', s:'☀️', m:'Радость, успех', img:RWS+'RWS_Tarot_19_Sun.jpg'},
+  {n:'Суд', s:'📢', m:'Пробуждение', img:RWS+'RWS_Tarot_20_Judgement.jpg'},
+  {n:'Мир', s:'🌍', m:'Целостность', img:RWS+'RWS_Tarot_21_World.jpg'}
 ];
 
-let state = { count: 0, cards: [], title: '' };
+var state = { count: 0, cards: [], title: '' };
 
 function go(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
   document.getElementById(id).classList.add('active');
 }
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
+  var t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
 }
 
-function startReading(count, title) {
+function startReading(count, title, desc) {
   state.count = count;
   state.title = title;
   state.cards = [];
@@ -191,24 +215,24 @@ function startReading(count, title) {
 }
 
 function drawCards() {
-  const area = document.getElementById('carea');
+  var area = document.getElementById('carea');
   area.innerHTML = '';
   state.cards = [];
   document.getElementById('dbtn').disabled = true;
   
-  const used = new Set();
-  for (let i = 0; i < state.count; i++) {
-    let idx;
-    do { idx = Math.floor(Math.random() * CARDS.length); } while (used.has(idx));
-    used.add(idx);
-    const card = CARDS[idx];
+  var used = {};
+  for (var i = 0; i < state.count; i++) {
+    var idx;
+    do { idx = Math.floor(Math.random() * CARDS.length); } while (used[idx]);
+    used[idx] = true;
+    var card = CARDS[idx];
     state.cards.push(card);
     
-    const el = document.createElement('div');
+    var el = document.createElement('div');
     el.className = 'tarot-card';
     el.style.animationDelay = (i * 0.1) + 's';
     
-    let front = '';
+    var front = '';
     if (card.img) {
       front = '<img class="card-img" src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div class="card-symbol">' + card.s + '</div><div class="card-name">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
     } else {
@@ -218,46 +242,53 @@ function drawCards() {
     el.innerHTML = '<div class="card-face card-back">☾</div><div class="card-face card-front">' + front + '</div>';
     area.appendChild(el);
     
-    setTimeout(() => { el.classList.add('flipped'); }, 400 + i * 180);
+    (function(el, delay) {
+      setTimeout(function() { el.classList.add('flipped'); }, delay);
+    })(el, 400 + i * 180);
   }
   
-  setTimeout(() => {
+  setTimeout(function() {
     document.getElementById('fbtn').style.display = 'block';
     document.getElementById('dbtn').style.display = 'none';
   }, 400 + state.count * 180 + 900);
 }
 
 function finishReading() {
-  const question = document.getElementById('qinput').value || 'без вопроса';
-  const cardsStr = state.cards.map(c => c.n).join(', ');
+  var question = document.getElementById('qinput').value || 'без вопроса';
+  var cardsStr = '';
+  for (var i = 0; i < state.cards.length; i++) {
+    if (i > 0) cardsStr += ', ';
+    cardsStr += state.cards[i].n;
+  }
   
   if (tg && tg.sendData) {
-    const payload = {
-      action: 'reading',
-      spread: state.title,
-      count: state.count,
-      cards: cardsStr,
-      question: question
-    };
-    tg.sendData(JSON.stringify(payload));
-    showToast('Отправлено в бот ✨');
+    var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + question;
+    tg.sendData(payload);
   } else {
-    showToast('⚠️ Не в Telegram — данные не уйдут');
+    showToast('⚠️ Открой из Telegram');
+  }
+}
+
+function backToBot() {
+  if (tg && tg.sendData) {
+    tg.sendData('back|||');
+  } else {
+    showToast('⚠️ Открой из Telegram');
   }
 }
 
 function drawDaily() {
-  const card = CARDS[Math.floor(Math.random() * CARDS.length)];
-  let html = '';
+  var card = CARDS[Math.floor(Math.random() * CARDS.length)];
+  var html = '';
   if (card.img) {
-    html = '<img src="' + card.img + '" style="width:160px;height:270px;object-fit:cover;border-radius:14px;border:2px solid rgba(255,179,71,0.7);margin-bottom:16px" onerror="this.style.display=\'none\'"><br>';
+    html = '<img class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
   } else {
     html = '<div style="font-size:80px;margin-bottom:16px">' + card.s + '</div>';
   }
-  html += '<div style="font-size:24px;font-weight:900;color:#ffb347">' + card.n + '</div>';
+  html += '<div class="daily-name">' + card.n + '</div>';
+  html += '<div class="daily-meaning">' + card.m + '</div>';
   
   document.getElementById('dbox').innerHTML = html;
-  document.getElementById('dailyTitle').textContent = '🌅 Карта дня';
   go('s-result');
 }
 </script>
