@@ -73,13 +73,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .act-row { display:flex; gap:8px; margin-top:8px; }
 .act-secondary { flex:1; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
 .act-secondary:active { transform:scale(0.97); background:rgba(255,255,255,0.12); }
-.act-fb-title { font-size:15px; font-weight:800; color:#ffb347; text-align:center; margin:14px 0 8px; }
-.act-fb-row { display:flex; gap:6px; }
-.act-fb-btn { flex:1; padding:14px 6px; border-radius:12px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; border:1px solid; }
-.act-fb-btn.yes { background:rgba(74,222,128,0.15); border-color:rgba(74,222,128,0.4); color:#4ade80; }
-.act-fb-btn.no { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.4); color:#ef4444; }
-.act-fb-btn.partly { background:rgba(251,191,36,0.15); border-color:rgba(251,191,36,0.4); color:#fbbf24; }
-.act-fb-btn:active { transform:scale(0.96); }
+.act-save { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.35); color:#4ade80; }
+.act-save:active { background:rgba(74,222,128,0.2); }
 .q-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; font-family:inherit; margin:12px 0; resize:none; }
 .q-input::placeholder { color:rgba(255,255,255,0.35); }
 .q-input:focus { outline:none; border-color:rgba(255,179,71,0.5); }
@@ -219,7 +214,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="screen" id="s-spread">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Выбери расклад</div>
-      <button class="spread-btn" onclick="startReading(1,'Одна карта')"><div class="spread-num">1</div><div><div class="btn-title">Одна карта</div><div class="btn-desc">Послание на сегодня</div></div></button>
+      <button class="spread-btn" onclick="startReading(1,'Одна карта')"><div class="spread-num">1</div><div><div class="btn-title">Одна карта</div><div class="btn-desc">Совет на сегодня</div></div></button>
       <button class="spread-btn" onclick="startReading(3,'Три карты')"><div class="spread-num">2</div><div><div class="btn-title">Три карты</div><div class="btn-desc">Прошлое · Настоящее · Будущее</div></div></button>
       <button class="spread-btn" onclick="startReading(5,'Крест')"><div class="spread-num">3</div><div><div class="btn-title">Крест</div><div class="btn-desc">5 карт · глубокий разбор</div></div></button>
       <button class="spread-btn" onclick="startReading(7,'Подкова')"><div class="spread-num">4</div><div><div class="btn-title">Подкова</div><div class="btn-desc">7 карт · ситуация</div></div></button>
@@ -343,6 +338,7 @@ try { soundOn = localStorage.getItem('youaura_sound') !== 'off'; } catch(e) {}
 var audioCtx = null;
 var musicGain = null;
 var musicNodes = [];
+var musicStarted = false;
 
 function initAudio() {
   if (audioCtx) {
@@ -354,6 +350,7 @@ function initAudio() {
     if (audioCtx.state === 'suspended') { try { audioCtx.resume().catch(function(){}); } catch(e) {} }
   } catch(e) {}
 }
+
 function playTone(freq, dur, type, vol) {
   if (!soundOn) return;
   initAudio();
@@ -372,6 +369,7 @@ function soundSuccess() { playTone(523, 0.1, 'sine', 0.1); setTimeout(function()
 function soundError() { playTone(220, 0.15, 'sine', 0.1); setTimeout(function(){ playTone(165, 0.2, 'sine', 0.1); }, 100); }
 function soundPop() { playTone(700, 0.05, 'sine', 0.08); }
 
+// МУЗЫКА: аккорд Am в СЛЫШИМОМ диапазоне (165-440 Гц) + тихая мелодия
 function startMusic() {
   if (!soundOn) return;
   initAudio();
@@ -382,11 +380,14 @@ function startMusic() {
     musicGain.gain.value = 0.001;
     musicGain.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 2.5);
     musicGain.connect(audioCtx.destination);
+
     var filter = audioCtx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 2000;
     filter.Q.value = 0.5;
     filter.connect(musicGain);
+
+    // Am: E3, A3, C4, E4, A4 — хорошо слышно на телефоне
     var freqs = [
       { f: 164.81, type: 'sine',     vol: 0.22 },
       { f: 220,    type: 'sine',     vol: 0.28 },
@@ -400,8 +401,10 @@ function startMusic() {
       osc.type = fd.type;
       osc.frequency.value = fd.f;
       osc.detune.value = (Math.random() - 0.5) * 8;
+
       var g = audioCtx.createGain();
       g.gain.value = fd.vol;
+
       var lfo = audioCtx.createOscillator();
       lfo.type = 'sine';
       lfo.frequency.value = 0.04 + Math.random() * 0.08;
@@ -409,15 +412,18 @@ function startMusic() {
       lfoG.gain.value = fd.vol * 0.4;
       lfo.connect(lfoG);
       lfoG.connect(g.gain);
+
       osc.connect(g);
       g.connect(filter);
       osc.start();
       lfo.start();
       musicNodes.push(osc, lfo);
     }
+    musicStarted = true;
     setTimeout(scheduleMelody, 4000);
   } catch(e) { musicGain = null; }
 }
+
 function scheduleMelody() {
   if (!soundOn || !musicGain || !audioCtx) return;
   var notes = [440, 523.25, 587.33, 659.25, 783.99];
@@ -438,6 +444,7 @@ function scheduleMelody() {
   } catch(e) {}
   setTimeout(scheduleMelody, 7000 + Math.random() * 11000);
 }
+
 function stopMusic() {
   if (!audioCtx || !musicGain) { musicNodes = []; musicGain = null; return; }
   try {
@@ -452,6 +459,7 @@ function stopMusic() {
     try { gainRef.disconnect(); } catch(e) {}
   }, 500);
 }
+
 function haptic(t) {
   if (tg && tg.HapticFeedback) { try {
     if (t === 'light') tg.HapticFeedback.impactOccurred('light');
@@ -472,7 +480,12 @@ function toggleSound() {
   else { stopMusic(); }
   haptic('light');
 }
-function tryEnableAudio() { initAudio(); startMusic(); }
+
+// Запуск музыки на ЛЮБОЕ взаимодействие (iOS требует gesture)
+function tryEnableAudio() {
+  initAudio();
+  startMusic();
+}
 document.addEventListener('touchstart', tryEnableAudio, {passive: true});
 document.addEventListener('click', tryEnableAudio);
 document.addEventListener('pointerdown', tryEnableAudio);
@@ -663,10 +676,10 @@ var CARDS = [
   {n:'Король Пентаклей', m:'Успех, стабильность. Владей ресурсами.', img:RWS+'Pents14.jpg'}
 ];
 var POSITIONS = {
-  1: ['Значение'],
+  1: ['Совет'],
   3: ['Прошлое', 'Настоящее', 'Будущее'],
-  5: ['Суть', 'Причина', 'Итог', 'Блок', 'Значение'],
-  7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Значение', 'Итог'],
+  5: ['Суть', 'Причина', 'Итог', 'Блок', 'Совет'],
+  7: ['Прошлое', 'Настоящее', 'Скрытое', 'Препятствие', 'Окружение', 'Совет', 'Итог'],
   10: ['Суть', 'Препятствие', 'Основа', 'Прошлое', 'Цель', 'Будущее', 'Вы', 'Окружение', 'Надежды и страхи', 'Итог']
 };
 
@@ -773,7 +786,6 @@ function startReading(count, title) {
   document.getElementById('backFromReading').style.display = 'block';
   go('s-reading');
 }
-
 function drawCards() {
   if (state.drawn) return;
   haptic('medium');
@@ -802,19 +814,10 @@ function drawCards() {
   setTimeout(function() {
     document.getElementById('dbtn').style.display = 'none';
     showInterpretation();
-    // Автосохранение в localStorage (fb пустой, ждёт отметки)
-    autoSaveSpreadToHistory();
     showActionButtons();
     haptic('success');
   }, 400 + state.count * 150 + 900);
 }
-
-function autoSaveSpreadToHistory() {
-  var cardNames = [];
-  for (var i = 0; i < state.cards.length; i++) cardNames.push(state.cards[i].n);
-  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: '', synced: false });
-}
-
 function showInterpretation() {
   var interp = document.getElementById('interp');
   var positions = POSITIONS[state.count] || [];
@@ -827,97 +830,63 @@ function showInterpretation() {
   interp.innerHTML = html;
   interp.style.display = 'block';
 }
-
 function showActionButtons() {
   var area = document.getElementById('actionArea');
   var html = '';
-
-  // Если balance > 0 — показываем кнопки сбываемости
-  if (balance >= 1) {
-    html += '<div class="act-fb-title">📊 Сбылось?</div>';
-    html += '<div class="act-fb-row">';
-    html += '<button class="act-fb-btn yes" onclick="markFbAndClose(\'yes\')">✅ Сбылось</button>';
-    html += '<button class="act-fb-btn no" onclick="markFbAndClose(\'no\')">❌ Нет</button>';
-    html += '<button class="act-fb-btn partly" onclick="markFbAndClose(\'partly\')">🟡 Частично</button>';
-    html += '</div>';
-  }
-
-  // Полный разбор
-  if (access >= 1) {
+  if (access > 0) {
     html += '<button class="act-full" onclick="finishWithFull()">🔍 Полный разбор <span class="badge">−1 разбор</span></button>';
-  } else if (balance >= 1) {
-    html += '<button class="act-full" onclick="showToast(\'Нет разборов. Активируй WM-код.\', true)" style="background:linear-gradient(135deg,#4a3a6a,#2a1f5e); box-shadow:none;">🔍 Полный разбор <span class="badge">нужен WM</span></button>';
+  } else {
+    html += '<button class="act-full" onclick="showToast(\'Нет разборов. Активируй WM-код в Заданиях.\', true)" style="background:linear-gradient(135deg,#4a3a6a,#2a1f5e); box-shadow:none;">🔍 Полный разбор <span class="badge">нужен WM-код</span></button>';
   }
-
-  // Второстепенные
-  html += '<div class="act-row"><button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
-
+  var saveBtn;
+  if (balance > 0) {
+    saveBtn = '<button class="act-secondary act-save" onclick="finishWithSave()">✅ Сохранить</button>';
+  } else {
+    saveBtn = '<button class="act-secondary act-save" onclick="showToast(\'Нет раскладов для сохранения — нужен GIFT/WM\', true)" style="opacity:0.5">✅ Сохранить</button>';
+  }
+  html += '<div class="act-row">' + saveBtn + '<button class="act-secondary" onclick="finishWithAnother()">🔁 Другой</button></div>';
+  html += '<div class="act-row"><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
   area.innerHTML = html;
   area.style.display = 'block';
 }
 
-function markFbAndClose(fbType) {
+function finishWithSave() {
   if (state.finished) return;
-  if (balance < 1) { showToast('Нет раскладов', true); return; }
+  if (balance < 1) { showToast('Нет раскладов для сохранения — нужен GIFT/WM', true); return; }
   state.finished = true;
-
-  // Обновляем fb в записи истории (она уже создана в autoSaveSpreadToHistory)
-  try {
-    var arr = loadHistory();
-    if (arr.length > 0 && arr[0].fb === '') {
-      arr[0].fb = fbType;
-      arr[0].synced = true; // бот получит метрику в payload
-      localStorage.setItem(HIST_KEY, JSON.stringify(arr));
-    }
-  } catch(e) {}
-
-  var cardsStr = '';
+  var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
     cardsStr += state.cards[i].n;
+    cardNames.push(state.cards[i].n);
   }
-
+  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: '', synced: true });
   balance = Math.max(0, balance - 1);
   document.getElementById('hBal').textContent = '🎟 ' + balance;
   document.getElementById('pvFree').textContent = balance;
-
-  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fbType;
-
-  var iconMap = { 'yes': '✅', 'no': '❌', 'partly': '🟡' };
-  var textMap = { 'yes': 'Сбылось!', 'no': 'Отмечено', 'partly': 'Частично' };
-
-  sendAndClose(payload, iconMap[fbType] || '✨', textMap[fbType] || 'Сохранено');
+  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
+  sendAndClose(payload, '✨', 'Расклад сохранён');
 }
 
 function finishWithFull() {
   if (state.finished) return;
   if (access < 1) { showToast('Нет разборов', true); return; }
   state.finished = true;
-
-  try {
-    var arr = loadHistory();
-    if (arr.length > 0 && arr[0].fb === '') {
-      arr[0].fb = 'full';
-      arr[0].synced = true;
-      localStorage.setItem(HIST_KEY, JSON.stringify(arr));
-    }
-  } catch(e) {}
-
-  var cardsStr = '';
+  var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
     cardsStr += state.cards[i].n;
+    cardNames.push(state.cards[i].n);
   }
-
+  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
-
   var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
 function finishWithAnother() {
-  askConfirm('Текущий расклад не отмечен. Сделать новый?', function() {
+  askConfirm('Текущий расклад не сохранён. Сделать новый?', function() {
     soundPop(); haptic('light');
     state.finished = false;
     state.drawn = false;
@@ -932,4 +901,194 @@ function sendAndClose(payload, icon, text) {
   ov.innerHTML = '<div class="success-icon">' + (icon || '✨') + '</div><div class="success-text">' + (text || 'Отправлено') + '</div><div class="success-sub">Возвращаемся в бот...</div>';
   document.body.appendChild(ov);
   setTimeout(function() {
-    if (tg && tg
+    if (tg && tg.sendData) {
+      try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
+    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
+  }, 900);
+}
+
+function loadHistory() {
+  try { var raw = localStorage.getItem(HIST_KEY); if (!raw) return []; var a = JSON.parse(raw); return Array.isArray(a) ? a : []; }
+  catch(e) { return []; }
+}
+function saveHistoryEntry(e) {
+  try { var a = loadHistory(); a.unshift(e); if (a.length > 50) a = a.slice(0, 50); localStorage.setItem(HIST_KEY, JSON.stringify(a)); }
+  catch(err) {}
+}
+function getUnsyncedCounts() {
+  var arr = loadHistory();
+  var yes = 0, no = 0, partly = 0, total = 0;
+  for (var i = 0; i < arr.length; i++) {
+    var h = arr[i];
+    if ((h.fb === 'yes' || h.fb === 'no' || h.fb === 'partly') && h.synced !== true) {
+      total++;
+      if (h.fb === 'yes') yes++;
+      else if (h.fb === 'no') no++;
+      else partly++;
+    }
+  }
+  return { yes: yes, no: no, partly: partly, total: total };
+}
+function markAllSynced() {
+  try {
+    var arr = loadHistory();
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i].fb === 'yes' || arr[i].fb === 'no' || arr[i].fb === 'partly') arr[i].synced = true;
+    }
+    localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+  } catch(e) {}
+}
+function pad2(n) { return n < 10 ? '0' + n : String(n); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function renderHistory() {
+  var arr = loadHistory();
+  var area = document.getElementById('histArea');
+  var unsync = getUnsyncedCounts();
+  var topHtml = '';
+  if (unsync.total > 0) {
+    topHtml = '<div class="sync-banner"><div class="sb-text">📤 ' + unsync.total + ' отметок не отправлены в бот</div><button class="sb-btn" onclick="syncHistory()">Синхронизировать</button></div>';
+  }
+  if (!arr.length) {
+    area.innerHTML = topHtml + '<div class="hist-empty">Пока нет раскладов.<br>Сделай первый - он появится здесь.</div>';
+    return;
+  }
+  var html = topHtml;
+  for (var i = 0; i < arr.length; i++) {
+    var h = arr[i]; var d = new Date(h.ts || 0);
+    var ds = pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    html += '<div class="hist-item"><div class="hist-date">' + ds + '</div><div class="hist-title">' + escapeHtml(h.title || '?') + ' · ' + (h.count || 0) + ' карт</div>';
+    if (h.question && h.question !== 'без вопроса') html += '<div class="hist-q">«' + escapeHtml(h.question) + '»</div>';
+    html += '<div class="hist-cards">';
+    var cs = h.cards || [];
+    for (var j = 0; j < cs.length; j++) html += '<div class="hist-card">' + escapeHtml(cs[j]) + '</div>';
+    html += '</div>';
+    if (h.fb === 'yes') {
+      html += '<div class="hist-fb-result">✅ Сбылось</div>';
+      if (h.synced !== true) html += '<div class="hist-unsync">📤 не отправлено в бот</div>';
+    } else if (h.fb === 'no') {
+      html += '<div class="hist-fb-result" style="background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.3); color:#ef4444">❌ Не сбылось</div>';
+      if (h.synced !== true) html += '<div class="hist-unsync">📤 не отправлено в бот</div>';
+    } else if (h.fb === 'partly') {
+      html += '<div class="hist-fb-result" style="background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.3); color:#fbbf24">🟡 Частично</div>';
+      if (h.synced !== true) html += '<div class="hist-unsync">📤 не отправлено в бот</div>';
+    } else if (h.fb === 'full') {
+      html += '<div class="hist-fb-result" style="background:rgba(167,139,250,0.1); border-color:rgba(167,139,250,0.3); color:#a78bfa">🔍 Полный разбор</div>';
+    } else {
+      html += '<div class="hist-fb"><button class="hist-fb-btn yes" onclick="markFb(' + i + ',\'yes\')">✅ Сбылось</button><button class="hist-fb-btn no" onclick="markFb(' + i + ',\'no\')">❌ Нет</button><button class="hist-fb-btn partly" onclick="markFb(' + i + ',\'partly\')">🟡 Частично</button></div>';
+    }
+    html += '<button class="hist-repeat" onclick="repeatSpread(' + i + ')">🔁 Повторить расклад</button>';
+    html += '</div>';
+  }
+  html += '<button class="hist-clear" onclick="clearHistory()">Очистить историю</button>';
+  area.innerHTML = html;
+}
+function repeatSpread(idx) {
+  var arr = loadHistory();
+  if (!arr[idx]) return;
+  var h = arr[idx];
+  if (balance < 1 && access < 1) { openNoKeysModal(); return; }
+  var count = (h.cards && h.cards.length) || 1;
+  var title = h.title || 'Расклад';
+  startReading(count, title);
+  if (h.question && h.question !== 'без вопроса') {
+    var qi = document.getElementById('qinput');
+    if (qi) qi.value = h.question;
+  }
+}
+function markFb(idx, result) {
+  try {
+    var a = loadHistory();
+    if (!a[idx]) return;
+    a[idx].fb = result;
+    a[idx].synced = false;
+    localStorage.setItem(HIST_KEY, JSON.stringify(a));
+    renderHistory();
+    if (result === 'yes') { showToast('✅ Отмечено: сбылось'); haptic('success'); }
+    else if (result === 'no') { showToast('❌ Отмечено: не сбылось'); haptic('light'); }
+    else { showToast('🟡 Отмечено: частично'); haptic('light'); }
+  } catch(e) {}
+}
+function syncHistory() {
+  var unsync = getUnsyncedCounts();
+  if (unsync.total === 0) { showToast('Всё синхронизировано'); return; }
+  var payload = 'sync_fb|' + unsync.yes + '|' + unsync.no + '|' + unsync.partly;
+  var ov = document.createElement('div');
+  ov.className = 'success-overlay';
+  ov.innerHTML = '<div class="success-icon">📤</div><div class="success-text">Синхронизация</div><div class="success-sub">Отправляем ' + unsync.total + ' отметок...</div>';
+  document.body.appendChild(ov);
+  soundSuccess(); haptic('success');
+  setTimeout(function() {
+    try {
+      tg.sendData(payload);
+      markAllSynced();
+      setTimeout(function(){ try { tg.close(); } catch(e){} }, 100);
+    } catch(e) {
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      showToast('Ошибка: ' + e.message, true);
+    }
+  }, 900);
+}
+function openHistory() { renderHistory(); go('s-history'); }
+function clearHistory() {
+  askConfirm('Удалить всю историю?', function() {
+    try { localStorage.removeItem(HIST_KEY); } catch(e) {}
+    renderHistory(); showToast('Очищено');
+  });
+}
+
+function openSupportScreen() {
+  document.getElementById('supportText').value = '';
+  document.getElementById('supLen').textContent = '0';
+  go('s-support');
+}
+function updateSupportCounter() {
+  document.getElementById('supLen').textContent = String(document.getElementById('supportText').value.length);
+}
+function sendSupport() {
+  var text = document.getElementById('supportText').value.trim();
+  if (text.length < 2) { showToast('Напиши сообщение', true); return; }
+  text = text.replace(/\|/g, ' ').replace(/\n+/g, ' ').substring(0, 500);
+  var ov = document.createElement('div');
+  ov.className = 'success-overlay';
+  ov.innerHTML = '<div class="success-icon">✅</div><div class="success-text">Отправлено</div><div class="success-sub">Возвращаемся в бот...</div>';
+  document.body.appendChild(ov);
+  soundSuccess(); haptic('success');
+  setTimeout(function() {
+    if (tg && tg.sendData) {
+      try { tg.sendData('support|' + text); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
+    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
+  }, 1000);
+}
+
+function backToBot() {
+  var unsync = getUnsyncedCounts();
+  var payload;
+  if (unsync.total > 0) {
+    payload = 'back|' + unsync.yes + '|' + unsync.no + '|' + unsync.partly;
+  } else {
+    payload = 'back|||';
+  }
+  if (tg && tg.sendData) {
+    try {
+      tg.sendData(payload);
+      if (unsync.total > 0) markAllSynced();
+      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
+    }
+    catch(e) { showToast('Ошибка', true); }
+  } else { showToast('Открой из Telegram', true); }
+}
+
+function drawDaily() {
+  haptic('medium');
+  var card = CARDS[Math.floor(Math.random() * CARDS.length)];
+  var html = '<img loading="lazy" decoding="async" class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
+  html += '<div class="daily-name">' + card.n + '</div><div class="daily-meaning">' + card.m + '</div>';
+  document.getElementById('dbox').innerHTML = html;
+  go('s-result');
+  setTimeout(function(){ soundSuccess(); }, 300);
+}
+</script>
+</body>
+</html>
