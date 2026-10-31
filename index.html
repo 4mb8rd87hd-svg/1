@@ -10,11 +10,55 @@
 html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #08080f; color: #fff; overflow: hidden; }
 body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
 .app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 16px; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+
+/* ===== HEADER / LOGO ===== */
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.logo { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; }
-.logo-icon { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #ffb347, #ff7f50); display: flex; align-items: center; justify-content: center; font-size: 17px; }
+.logo { display: flex; align-items: center; gap: 11px; font-size: 16px; font-weight: 800; }
+.logo-icon {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffd89b 0%, #ffb347 35%, #ff7f50 75%, #c94a2e 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 900; color: #08080f;
+  box-shadow:
+    0 0 12px rgba(255,179,71,0.8),
+    0 0 24px rgba(255,179,71,0.5),
+    0 0 40px rgba(255,127,80,0.3),
+    inset 0 1px 3px rgba(255,255,255,0.55),
+    inset 0 -2px 4px rgba(0,0,0,0.3);
+  animation: auraGlow 4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes auraGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 12px rgba(255,179,71,0.8),
+      0 0 24px rgba(255,179,71,0.5),
+      0 0 40px rgba(255,127,80,0.3),
+      inset 0 1px 3px rgba(255,255,255,0.55),
+      inset 0 -2px 4px rgba(0,0,0,0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 18px rgba(255,179,71,0.95),
+      0 0 36px rgba(255,179,71,0.65),
+      0 0 60px rgba(255,127,80,0.45),
+      inset 0 1px 3px rgba(255,255,255,0.55),
+      inset 0 -2px 4px rgba(0,0,0,0.3);
+  }
+}
+.logo-text {
+  font-size: 18px; font-weight: 900;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #ffffff 0%, #ffd89b 55%, #ffb347 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .balance { display: flex; gap: 6px; }
 .bal-item { padding: 6px 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; font-size: 12px; font-weight: 700; }
+
 .content { flex: 1; overflow-y: auto; padding-bottom: 20px; }
 .content::-webkit-scrollbar { display: none; }
 .greeting { font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin: 16px 0 4px; }
@@ -77,12 +121,30 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
 .stat { text-align: center; }
 .stat-label { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
 .stat-value { font-size: 24px; font-weight: 900; margin-top: 4px; color: #ffb347; }
+
+/* ===== HISTORY ===== */
+.hist-item { padding: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; margin-bottom: 10px; }
+.hist-date { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 6px; font-weight: 700; letter-spacing: 0.3px; }
+.hist-title { font-size: 14px; font-weight: 800; color: #ffb347; margin-bottom: 6px; }
+.hist-q { font-size: 12px; color: rgba(255,255,255,0.65); margin-bottom: 8px; font-style: italic; line-height: 1.4; }
+.hist-cards { display: flex; flex-wrap: wrap; gap: 4px; }
+.hist-card { padding: 4px 8px; background: rgba(255,179,71,0.1); border: 1px solid rgba(255,179,71,0.25); border-radius: 6px; font-size: 10px; font-weight: 700; color: #ffb347; }
+.hist-empty { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.4); font-size: 14px; line-height: 1.6; }
+.hist-clear { width: 100%; padding: 12px; background: rgba(255,127,80,0.08); border: 1px solid rgba(255,127,80,0.3); border-radius: 12px; color: #ff7f50; font-weight: 700; cursor: pointer; margin-top: 16px; font-family: inherit; font-size: 13px; }
+.hist-clear:active { transform: scale(0.97); }
+
+/* ===== SUPPORT ===== */
+.support-hint { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.5; margin-bottom: 4px; }
+.support-counter { text-align: right; font-size: 11px; color: rgba(255,255,255,0.35); margin-top: -6px; margin-bottom: 12px; font-weight: 600; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div class="logo"><div class="logo-icon">Y</div><div>YouAura</div></div>
+    <div class="logo">
+      <div class="logo-icon">Y</div>
+      <div class="logo-text">YouAura</div>
+    </div>
     <div class="balance">
       <div class="bal-item" id="hBal">0</div>
       <div class="bal-item" id="hAcc">0</div>
@@ -90,6 +152,7 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
   </div>
 
   <div class="content">
+    <!-- HOME -->
     <div class="screen active" id="s-home">
       <div class="greeting">Привет,<br><span class="greeting-name" id="gName">друг</span> ✨</div>
       <div class="greeting-sub">Карты готовы говорить с тобой</div>
@@ -118,7 +181,15 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
         </div>
       </button>
 
-      <button class="btn support" onclick="openSupport()">
+      <button class="btn" onclick="openHistory()">
+        <div class="btn-icon">📜</div>
+        <div class="btn-info">
+          <div class="btn-title">История</div>
+          <div class="btn-desc">Прошлые расклады</div>
+        </div>
+      </button>
+
+      <button class="btn support" onclick="openSupportScreen()">
         <div class="btn-icon">✉️</div>
         <div class="btn-info">
           <div class="btn-title">Поддержка</div>
@@ -135,6 +206,7 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
       </button>
     </div>
 
+    <!-- SPREAD CHOOSER -->
     <div class="screen" id="s-spread">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Выбери расклад</div>
@@ -161,24 +233,26 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
       </button>
     </div>
 
+    <!-- READING -->
     <div class="screen" id="s-reading">
       <button class="back-btn" id="backFromReading" onclick="go('s-spread')">‹ Назад</button>
       <div class="title" id="rtitle">Расклад</div>
-      
+
       <textarea class="q-input" id="qinput" placeholder="Твой вопрос (необязательно)" rows="2"></textarea>
       <div class="q-locked" id="qlocked" style="display:none">
         <div class="ql-label">Твой вопрос</div>
         <div id="qlocked-text">-</div>
       </div>
-      
+
       <div class="cards-row" id="carea"></div>
-      
+
       <button class="big-btn" id="dbtn" onclick="drawCards()">Вытянуть карты</button>
       <button class="big-btn" id="fbtn" onclick="finishReading()" style="display:none">Отправить в бот</button>
-      
+
       <div class="interp" id="interp" style="display:none"></div>
     </div>
 
+    <!-- PROFILE -->
     <div class="screen" id="s-profile">
       <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
       <div class="title">Профиль</div>
@@ -193,6 +267,24 @@ body { background: radial-gradient(ellipse at top, #1a1a3e 0%, #08080f 70%); }
       </div>
     </div>
 
+    <!-- HISTORY -->
+    <div class="screen" id="s-history">
+      <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
+      <div class="title">История раскладов</div>
+      <div id="histArea"></div>
+    </div>
+
+    <!-- SUPPORT -->
+    <div class="screen" id="s-support">
+      <button class="back-btn" onclick="go('s-home')">‹ Назад</button>
+      <div class="title">Поддержка</div>
+      <div class="support-hint">Напиши вопрос админу — ответ придёт в бот.</div>
+      <textarea class="q-input" id="supportText" placeholder="Твой вопрос или сообщение..." rows="5" maxlength="500" oninput="updateSupportCounter()"></textarea>
+      <div class="support-counter"><span id="supLen">0</span> / 500</div>
+      <button class="big-btn" onclick="sendSupport()">Отправить</button>
+    </div>
+
+    <!-- RESULT (daily) -->
     <div class="screen" id="s-result">
       <button class="back-btn" onclick="go('s-home')">‹ На главную</button>
       <div class="title">Карта дня</div>
@@ -212,6 +304,16 @@ var balance = parseInt(params.get('bal') || '0');
 var access = parseInt(params.get('acc') || '0');
 var userName = params.get('name') || 'друг';
 var readings = parseInt(params.get('read') || '0');
+
+var tgUser = null;
+try { tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null; } catch(e) {}
+
+function getUserId() {
+  if (tgUser && tgUser.id) return String(tgUser.id);
+  return 'anon_' + (params.get('name') || 'unknown');
+}
+
+var HIST_KEY = 'youaura_hist_v1_' + getUserId();
 
 document.getElementById('hBal').textContent = 'Раскладов: ' + balance;
 document.getElementById('hAcc').textContent = 'Разборов: ' + access;
@@ -323,6 +425,7 @@ var POSITIONS = {
 
 var state = { count: 0, cards: [], title: '', question: '', drawn: false };
 
+/* ===== NAV ===== */
 function go(id) {
   var screens = document.querySelectorAll('.screen');
   for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
@@ -338,6 +441,7 @@ function showToast(msg) {
   setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 
+/* ===== READING ===== */
 function startReading(count, title) {
   if (balance < 1) {
     showToast('Нет раскладов. Активируй код в боте.');
@@ -348,7 +452,7 @@ function startReading(count, title) {
   state.cards = [];
   state.question = '';
   state.drawn = false;
-  
+
   document.getElementById('rtitle').textContent = title;
   document.getElementById('carea').innerHTML = '';
   document.getElementById('qinput').value = '';
@@ -360,21 +464,22 @@ function startReading(count, title) {
   document.getElementById('dbtn').disabled = false;
   document.getElementById('fbtn').style.display = 'none';
   document.getElementById('backFromReading').style.display = 'block';
-  
+
   go('s-reading');
 }
 
 function drawCards() {
   if (state.drawn) return;
-  
-  state.question = document.getElementById('qinput').value.trim() || 'без вопроса';
+
+  var rawQ = document.getElementById('qinput').value.trim();
+  state.question = (rawQ || 'без вопроса').replace(/\|/g, ' ');
   state.drawn = true;
-  
+
   document.getElementById('qinput').style.display = 'none';
   document.getElementById('qlocked').style.display = 'block';
   document.getElementById('qlocked-text').textContent = state.question;
   document.getElementById('backFromReading').style.display = 'none';
-  
+
   var area = document.getElementById('carea');
   area.innerHTML = '';
   state.cards = [];
@@ -411,7 +516,7 @@ function showInterpretation() {
   var interp = document.getElementById('interp');
   var positions = POSITIONS[state.count] || [];
   var html = '<div class="interp-title">Разбор расклада</div>';
-  
+
   for (var i = 0; i < state.cards.length; i++) {
     var card = state.cards[i];
     var pos = positions[i] || ('Позиция ' + (i + 1));
@@ -421,23 +526,37 @@ function showInterpretation() {
     html += '<div class="interp-meaning">' + card.m + '</div>';
     html += '</div>';
   }
-  
+
   var adviceCard = state.cards[state.cards.length - 1];
   html += '<div class="summary">';
   html += '<div class="summary-title">Общий совет</div>';
   html += '<div class="summary-text">' + adviceCard.m + '</div>';
   html += '</div>';
-  
+
   interp.innerHTML = html;
   interp.style.display = 'block';
 }
 
 function finishReading() {
   var cardsStr = '';
+  var cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
     cardsStr += state.cards[i].n;
+    cardNames.push(state.cards[i].n);
   }
+
+  saveHistoryEntry({
+    ts: Date.now(),
+    title: state.title,
+    count: state.count,
+    cards: cardNames,
+    question: state.question
+  });
+
+  balance = Math.max(0, balance - 1);
+  document.getElementById('hBal').textContent = 'Раскладов: ' + balance;
+  document.getElementById('pvFree').textContent = balance;
 
   var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
 
@@ -453,10 +572,101 @@ function finishReading() {
   }
 }
 
-function openSupport() {
+/* ===== HISTORY ===== */
+function loadHistory() {
+  try {
+    var raw = localStorage.getItem(HIST_KEY);
+    if (!raw) return [];
+    var arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) { return []; }
+}
+
+function saveHistoryEntry(entry) {
+  try {
+    var arr = loadHistory();
+    arr.unshift(entry);
+    if (arr.length > 50) arr = arr.slice(0, 50);
+    localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+  } catch(e) {}
+}
+
+function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function renderHistory() {
+  var arr = loadHistory();
+  var area = document.getElementById('histArea');
+
+  if (!arr.length) {
+    area.innerHTML = '<div class="hist-empty">Пока нет раскладов.<br>Сделай первый — он появится здесь.</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < arr.length; i++) {
+    var h = arr[i];
+    var d = new Date(h.ts || 0);
+    var dateStr = pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+
+    html += '<div class="hist-item">';
+    html += '<div class="hist-date">' + dateStr + '</div>';
+    html += '<div class="hist-title">' + escapeHtml(h.title || '?') + ' · ' + (h.count || 0) + ' карт</div>';
+    if (h.question && h.question !== 'без вопроса') {
+      html += '<div class="hist-q">«' + escapeHtml(h.question) + '»</div>';
+    }
+    html += '<div class="hist-cards">';
+    var cs = h.cards || [];
+    for (var j = 0; j < cs.length; j++) {
+      html += '<div class="hist-card">' + escapeHtml(cs[j]) + '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  html += '<button class="hist-clear" onclick="clearHistory()">Очистить историю</button>';
+  area.innerHTML = html;
+}
+
+function openHistory() {
+  renderHistory();
+  go('s-history');
+}
+
+function clearHistory() {
+  if (!confirm('Удалить всю историю раскладов?')) return;
+  try { localStorage.removeItem(HIST_KEY); } catch(e) {}
+  renderHistory();
+  showToast('История очищена');
+}
+
+/* ===== SUPPORT ===== */
+function openSupportScreen() {
+  document.getElementById('supportText').value = '';
+  document.getElementById('supLen').textContent = '0';
+  go('s-support');
+}
+
+function updateSupportCounter() {
+  var v = document.getElementById('supportText').value;
+  document.getElementById('supLen').textContent = String(v.length);
+}
+
+function sendSupport() {
+  var text = document.getElementById('supportText').value.trim();
+  if (text.length < 2) {
+    showToast('Напиши сообщение');
+    return;
+  }
+  text = text.replace(/\|/g, ' ').replace(/\n+/g, ' ').substring(0, 500);
+
   if (tg && tg.sendData) {
     try {
-      tg.sendData('support|||');
+      tg.sendData('support|' + text);
       setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
     } catch(e) {
       showToast('Ошибка: ' + e.message);
@@ -466,6 +676,7 @@ function openSupport() {
   }
 }
 
+/* ===== BOT ===== */
 function backToBot() {
   if (tg && tg.sendData) {
     try {
@@ -477,6 +688,7 @@ function backToBot() {
   }
 }
 
+/* ===== DAILY ===== */
 function drawDaily() {
   var card = CARDS[Math.floor(Math.random() * CARDS.length)];
   var html = '<img class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
