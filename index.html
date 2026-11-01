@@ -158,7 +158,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .task-btn.primary { background:linear-gradient(135deg, #ffb347, #ff7f50); color:#08080f; border:none; }
 .task-btn.share-btn { background:rgba(74,222,128,0.12); border-color:rgba(74,222,128,0.4); color:#4ade80; }
 .ref-box { padding:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:8px; font-size:11px; font-family:monospace; color:#ffb347; word-break:break-all; margin-bottom:8px; }
-.promo-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:14px; font-family:inherit; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; }
+.promo-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:14px; font-family:inherit; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; resize:none; }
 .promo-input::placeholder { color:rgba(255,255,255,0.3); text-transform:none; letter-spacing:normal; }
 .promo-input:focus { outline:none; border-color:rgba(255,179,71,0.5); }
 .support-hint { font-size:13px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:4px; }
@@ -285,9 +285,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <button class="task-btn share-btn" onclick="shareBot()">📤 Поделиться ботом</button>
       </div>
       <div class="task-card">
-        <div class="task-head"><div class="task-icon">🎟</div><div class="task-title">Промокод</div></div>
-        <div class="task-desc">Введи WM-XXXXXX (разбор) или GIFT-XXXXXX (расклады)</div>
-        <input type="text" class="promo-input" id="promoInput" placeholder="WM-123456 или GIFT-123456" maxlength="20">
+        <div class="task-head"><div class="task-icon">🎟</div><div class="task-title">Промокоды</div></div>
+        <div class="task-desc">Введи один или несколько кодов через пробел / с новой строки.<br>WM-XXXXXX → +1 разбор &nbsp;·&nbsp; GIFT-XXXXXX → +5 раскладов</div>
+        <textarea class="promo-input" id="promoInput" placeholder="WM-123456 GIFT-654321&#10;WM-111111" rows="3" maxlength="500"></textarea>
         <button class="task-btn primary" onclick="redeemCode()">Активировать</button>
       </div>
     </div>
@@ -344,7 +344,6 @@ var HIST_KEY = 'youaura_hist_v1_' + getUserId();
 var PENDING_KEY = 'youaura_pending_v1_' + getUserId();
 var HIST_MAX = 5;
 
-/* ===== АУДИО + МУЗЫКА (всегда включены) ===== */
 var soundOn = true;
 var audioCtx = null;
 var musicGain = null;
@@ -510,7 +509,7 @@ function askConfirm(text, onYes) {
   if (confirm(text)) onYes();
 }
 
-/* ===== PENDING (анти-накрутка) ===== */
+/* ===== PENDING ===== */
 function loadPending() {
   try {
     var raw = localStorage.getItem(PENDING_KEY);
@@ -594,13 +593,6 @@ document.getElementById('pvFree').textContent = balance;
 document.getElementById('pvAcc').textContent = access;
 document.getElementById('pvRead').textContent = readings;
 document.getElementById('pn').textContent = userName;
-
-var pendingArr = loadPending();
-if (pendingArr.length > 0) {
-  balance = Math.max(0, balance - pendingArr.length);
-  document.getElementById('hBal').textContent = '🎟 ' + balance;
-  document.getElementById('pvFree').textContent = balance;
-}
 
 (function applyAvatar() {
   try {
@@ -798,7 +790,7 @@ var POSITIONS = {
   for (var i = 0; i < popular.length; i++) { try { var im = new Image(); im.src = RWS + popular[i]; } catch(e) {} }
 })();
 
-var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false };
+var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false, paidWith: 'free' };
 
 function go(id) {
   var s = document.querySelectorAll('.screen');
@@ -833,14 +825,30 @@ function checkSub() {
     catch(e) { showToast('Ошибка: ' + e.message, true); }
   }
 }
+
+/* ===== ПАКЕТНАЯ АКТИВАЦИЯ КОДОВ ===== */
 function redeemCode() {
-  var code = document.getElementById('promoInput').value.trim().toUpperCase();
-  if (code.length < 5) { showToast('Введи код', true); return; }
-  if (tg && tg.sendData) {
-    try { tg.sendData('redeem|' + code); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-    catch(e) { showToast('Ошибка: ' + e.message, true); }
-  }
+  var raw = document.getElementById('promoInput').value.trim().toUpperCase();
+  if (raw.length < 5) { showToast('Введи код', true); return; }
+
+  var codes = raw.split(/[\s,;]+/).filter(function(c) { return c.length >= 5; });
+  if (codes.length === 0) { showToast('Введи код', true); return; }
+
+  var payload = 'redeem_batch|' + codes.join('|');
+  var ov = document.createElement('div');
+  ov.className = 'success-overlay';
+  ov.innerHTML = '<div class="success-icon">🎟</div><div class="success-text">Активация</div><div class="success-sub">Кодов: ' + codes.length + '</div>';
+  document.body.appendChild(ov);
+  soundSuccess(); haptic('success');
+
+  setTimeout(function() {
+    if (tg && tg.sendData) {
+      try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
+    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
+  }, 800);
 }
+
 function shareBot() {
   if (!botName) { showToast('Ссылка на бота не настроена', true); return; }
   var link = 'https://t.me/' + botName;
@@ -883,7 +891,7 @@ function goSupportFromModal() { closeNoKeysModal(); openSupportScreen(); }
 function startReading(count, title) {
   if (balance < 1 && access < 1) { openNoKeysModal(); return; }
   state.count = count; state.title = title; state.cards = []; state.question = '';
-  state.drawn = false; state.finished = false;
+  state.drawn = false; state.finished = false; state.paidWith = 'free';
   document.getElementById('rtitle').textContent = title;
   document.getElementById('carea').innerHTML = '';
   document.getElementById('qinput').value = '';
@@ -898,24 +906,31 @@ function startReading(count, title) {
   document.getElementById('backFromReading').style.display = 'block';
   go('s-reading');
 }
+
 function drawCards() {
   if (state.drawn) return;
-  if (balance < 1) { openNoKeysModal(); return; }
+  if (balance < 1 && access < 1) { openNoKeysModal(); return; }
   haptic('medium');
+
   var rawQ = document.getElementById('qinput').value.trim();
   state.question = (rawQ || 'без вопроса').replace(/\|/g, ' ');
   state.drawn = true;
 
-  balance = Math.max(0, balance - 1);
-  document.getElementById('hBal').textContent = '🎟 ' + balance;
-  document.getElementById('pvFree').textContent = balance;
-  addPending({
-    id: 'p_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
-    ts: Date.now(),
-    title: state.title,
-    count: state.count,
-    question: state.question
-  });
+  if (balance >= 1) {
+    balance--;
+    state.paidWith = 'free';
+    document.getElementById('hBal').textContent = '🎟 ' + balance;
+    document.getElementById('pvFree').textContent = balance;
+    addPending({
+      id: 'p_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
+      ts: Date.now(),
+      title: state.title,
+      count: state.count,
+      question: state.question
+    });
+  } else {
+    state.paidWith = 'access';
+  }
 
   document.getElementById('qinput').style.display = 'none';
   document.getElementById('qlocked').style.display = 'block';
@@ -955,9 +970,19 @@ function showInterpretation() {
   interp.innerHTML = html;
   interp.style.display = 'block';
 }
+
 function showActionButtons() {
   var area = document.getElementById('actionArea');
   var html = '';
+
+  if (state.paidWith === 'access') {
+    html += '<button class="act-full" onclick="finishWithAccess()">📩 Отправить на разбор <span class="badge">−1 разбор</span></button>';
+    html += '<div class="act-row"><button class="act-secondary" onclick="shareResult()">📤 Поделиться</button></div>';
+    area.innerHTML = html;
+    area.style.display = 'block';
+    return;
+  }
+
   if (access > 0) {
     html += '<button class="act-full" onclick="finishWithFull()">🔍 Полный разбор <span class="badge">−1 разбор</span></button>';
   } else {
@@ -975,6 +1000,7 @@ function showActionButtons() {
 
 function finishWithVote(fb) {
   if (state.finished) return;
+  if (!state.drawn) return;
   state.finished = true;
   var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
@@ -995,6 +1021,7 @@ function finishWithVote(fb) {
 
 function finishWithFull() {
   if (state.finished) return;
+  if (!state.drawn) return;
   if (access < 1) { showToast('Нет разборов', true); return; }
   state.finished = true;
   var cardsStr = '', cardNames = [];
@@ -1010,6 +1037,27 @@ function finishWithFull() {
 
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
+  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
+  sendAndClose(payload, '🔍', 'Полный разбор заказан');
+}
+
+function finishWithAccess() {
+  if (state.finished) return;
+  if (!state.drawn) return;
+  if (access < 1) { showToast('Нет разборов', true); return; }
+  state.finished = true;
+
+  access = Math.max(0, access - 1);
+  document.getElementById('hAcc').textContent = '🔍 ' + access;
+
+  var cardsStr = '', cardNames = [];
+  for (var i = 0; i < state.cards.length; i++) {
+    if (i > 0) cardsStr += ', ';
+    cardsStr += state.cards[i].n;
+    cardNames.push(state.cards[i].n);
+  }
+  saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
+
   var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
