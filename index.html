@@ -1324,10 +1324,65 @@ function backToBot() {
   } else { showToast('Открой из Telegram', true); }
 }
 
+/* ===== Статус кнопки "Карта дня" ===== */
+(function initDailyButtonState() {
+  if (getDailyCard()) {
+    var btns = document.querySelectorAll('.btn');
+    for (var i = 0; i < btns.length; i++) {
+      var t = btns[i].querySelector('.btn-title');
+      if (t && t.textContent === 'Карта дня') {
+        var d = btns[i].querySelector('.btn-desc');
+        if (d) d.textContent = '✅ На сегодня получена';
+        btns[i].style.opacity = '0.7';
+        break;
+      }
+    }
+  }
+})();
+/* ===== КАРТА ДНЯ: 1 раз в день ===== */
+function getTodayKey() {
+  var d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+}
+function getDailyCard() {
+  try {
+    var raw = localStorage.getItem('youaura_daily_v1_' + getUserId());
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    if (o && o.date === getTodayKey() && o.card && o.card.n) return o;
+  } catch(e) {}
+  return null;
+}
+function saveDailyCard(card) {
+  try {
+    localStorage.setItem('youaura_daily_v1_' + getUserId(), JSON.stringify({
+      date: getTodayKey(),
+      card: { n: card.n, m: card.m, img: card.img }
+    }));
+  } catch(e) {}
+}
+function isDailyDone() { return !!getDailyCard(); }
+
 function drawDaily() {
   haptic('medium');
-  var card = CARDS[Math.floor(Math.random() * CARDS.length)];
   var box = document.getElementById('dbox');
+
+  // Уже вытянута сегодня — показываем ту же карту без анимации
+  var existing = getDailyCard();
+  if (existing) {
+    var c0 = existing.card;
+    var html0 = '<img loading="lazy" decoding="async" class="daily-img" src="' + c0.img + '" onerror="this.style.display=\'none\'"><br>';
+    html0 += '<div class="daily-name">' + c0.n + '</div><div class="daily-meaning">' + c0.m + '</div>';
+    html0 += '<div style="margin-top:16px;padding:12px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4">🌅 Карта дня уже вытянута.<br>Новая — завтра ✨</div>';
+    box.style.perspective = '';
+    box.innerHTML = html0;
+    go('s-result');
+    showToast('🌅 Карта дня уже вытянута');
+    return;
+  }
+
+  // Новая карта — с анимацией
+  var card = CARDS[Math.floor(Math.random() * CARDS.length)];
 
   box.innerHTML = '<div class="card" id="dailyAnimCard" style="margin:0 auto">'
     + '<div class="card-face card-back">✦</div>'
@@ -1373,9 +1428,13 @@ function drawDaily() {
       if (d) d.classList.remove('on');
       if (g) g.classList.remove('on');
 
+      // Сохраняем карту дня
+      saveDailyCard(card);
+
       setTimeout(function() {
         var html = '<img loading="lazy" decoding="async" class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
         html += '<div class="daily-name">' + card.n + '</div><div class="daily-meaning">' + card.m + '</div>';
+        html += '<div style="margin-top:16px;padding:12px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4">🌅 Карта дня уже вытянута.<br>Новая — завтра ✨</div>';
         box.style.perspective = '';
         box.innerHTML = html;
       }, 600);
