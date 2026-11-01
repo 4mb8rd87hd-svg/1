@@ -538,7 +538,7 @@ function removePendingById(id) {
 function flushPendingToBot() {
   var arr = loadPending();
   if (!arr.length) { showToast('Нет неотмеченных раскладов'); return; }
-var items = [];
+  var items = [];
   for (var i = 0; i < arr.length; i++) {
     var _it = arr[i];
     var _t = String(_it.title || '?').replace(/[|~]/g, ' ');
@@ -899,6 +899,7 @@ function startReading(count, title) {
   if (balance < 1 && access < 1) { openNoKeysModal(); return; }
   state.count = count; state.title = title; state.cards = []; state.question = '';
   state.drawn = false; state.finished = false; state.paidWith = 'free';
+  state.pendingId = null;
   document.getElementById('rtitle').textContent = title;
   document.getElementById('carea').innerHTML = '';
   document.getElementById('qinput').value = '';
@@ -928,8 +929,10 @@ function drawCards() {
     state.paidWith = 'free';
     document.getElementById('hBal').textContent = '🎟 ' + balance;
     document.getElementById('pvFree').textContent = balance;
+    var pid = 'p_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+    state.pendingId = pid;
     addPending({
-      id: 'p_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
+      id: pid,
       ts: Date.now(),
       title: state.title,
       count: state.count,
@@ -1017,8 +1020,10 @@ function finishWithVote(fb) {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: fb, synced: true });
 
-  var p = loadPending();
-  if (p.length > 0) removePendingById(p[0].id);
+  if (state.pendingId) {
+    removePendingById(state.pendingId);
+    state.pendingId = null;
+  }
 
   var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fb;
   var icon = fb === 'yes' ? '✅' : (fb === 'no' ? '❌' : '🟡');
@@ -1039,13 +1044,16 @@ function finishWithFull() {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
 
-  var p = loadPending();
-  if (p.length > 0) removePendingById(p[0].id);
+  if (state.pendingId) {
+    removePendingById(state.pendingId);
+    state.pendingId = null;
+  }
 
-  // Компенсируем локальное списание из drawCards — мы платим разбором, не раскладом
-  balance++;
-  document.getElementById('hBal').textContent = '🎟 ' + balance;
-  document.getElementById('pvFree').textContent = balance;
+  if (state.paidWith === 'free') {
+    balance++;
+    document.getElementById('hBal').textContent = '🎟 ' + balance;
+    document.getElementById('pvFree').textContent = balance;
+  }
 
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
