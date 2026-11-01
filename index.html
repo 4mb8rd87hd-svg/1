@@ -538,8 +538,15 @@ function removePendingById(id) {
 function flushPendingToBot() {
   var arr = loadPending();
   if (!arr.length) { showToast('Нет неотмеченных раскладов'); return; }
-  var json = JSON.stringify(arr);
-  var payload = 'sync_pending|' + json;
+var items = [];
+  for (var i = 0; i < arr.length; i++) {
+    var _it = arr[i];
+    var _t = String(_it.title || '?').replace(/[|~]/g, ' ');
+    var _c = String(_it.count || '?').replace(/[|~]/g, ' ');
+    var _q = String(_it.question || '-').replace(/[|~]/g, ' ');
+    items.push(_t + '~' + _c + '~' + _q);
+  }
+  var payload = 'sync_pending|' + items.join('|');
   var ov = document.createElement('div');
   ov.className = 'success-overlay';
   ov.innerHTML = '<div class="success-icon">📤</div><div class="success-text">Отправка</div><div class="success-sub">Отмечаем ' + arr.length + ' расклад(ов)...</div>';
