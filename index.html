@@ -1035,6 +1035,11 @@ function finishWithFull() {
   var p = loadPending();
   if (p.length > 0) removePendingById(p[0].id);
 
+  // Компенсируем локальное списание из drawCards — мы платим разбором, не раскладом
+  balance++;
+  document.getElementById('hBal').textContent = '🎟 ' + balance;
+  document.getElementById('pvFree').textContent = balance;
+
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
   var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
