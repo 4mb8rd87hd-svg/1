@@ -412,7 +412,7 @@ function doStartMusic() {
     musicGain = c.createGain();
     var now = c.currentTime;
     musicGain.gain.setValueAtTime(0.0001, now);
-    musicGain.gain.exponentialRampToValueAtTime(0.5, now + 2.0);
+    musicGain.gain.exponentialRampToValueAtTime(0.04, now + 2.0);
     musicGain.connect(c.destination);
 
     var filter = c.createBiquadFilter();
@@ -472,7 +472,7 @@ function scheduleMelody() {
     osc.frequency.value = note;
     var g = audioCtx.createGain();
     g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 0.3);
+    g.gain.exponentialRampToValueAtTime(0.015, audioCtx.currentTime + 0.3);
     g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
     osc.connect(g);
     g.connect(musicGain);
