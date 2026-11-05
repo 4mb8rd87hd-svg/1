@@ -825,10 +825,10 @@ var POSITIONS = {
 
 (function preloadPopular() {
   var popular = ['RWS_Tarot_00_Fool.jpg','RWS_Tarot_01_Magician.jpg','RWS_Tarot_02_High_Priestess.jpg','RWS_Tarot_03_Empress.jpg','RWS_Tarot_04_Emperor.jpg','RWS_Tarot_06_Lovers.jpg','RWS_Tarot_10_Wheel_of_Fortune.jpg','RWS_Tarot_13_Death.jpg','RWS_Tarot_17_Star.jpg','RWS_Tarot_19_Sun.jpg'];
-  for (var i = 0; i < popular.length; i++) { try { var im = new Image(); im.src = RWS + popular[i]; } catch(e) {} }
+  for (var i = 0; i < popular.length; i++) { try { var im = new Image(); im.loading = 'lazy'; im.decoding = 'async'; im.src = RWS + popular[i]; } catch(e) {} }
 })();
 
-var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false, paidWith: 'free' };
+var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false, paidWith: 'free', pendingId: null };
 
 function go(id) {
   var s = document.querySelectorAll('.screen');
@@ -1094,7 +1094,7 @@ function finishWithVote(fb) {
     state.pendingId = null;
   }
 
-  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fb;
+  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fb + '|' + (state.pendingId || '');
   var icon = fb === 'yes' ? '✅' : (fb === 'no' ? '❌' : '🟡');
   var text = fb === 'yes' ? 'Сбылось! Спасибо' : (fb === 'no' ? 'Понятно. Учтём' : 'Спасибо за отзыв');
   sendAndClose(payload, icon, text);
@@ -1127,7 +1127,7 @@ function finishWithFull() {
 
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
-  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
+  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + (state.pendingId || '');
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
@@ -1149,7 +1149,7 @@ function finishWithAccess() {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
 
-  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question;
+  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + (state.pendingId || '');
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
