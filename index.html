@@ -734,7 +734,8 @@ if (refLink) {
   document.getElementById('refBox').innerHTML = '<div class="task-desc" style="color:rgba(255,127,80,0.8)">⚠️ Реф-ссылка недоступна</div>';
 }
 
-var RWS = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
+// БАЗА ДАННЫХ КАРТ
+var RWS = 'https://4mb8rd87hd-svg.github.io/cards/';
 var CARDS = [
   {n:'Шут', m:'Начало, спонтанность, риск. Доверься потоку.', img:RWS+'RWS_Tarot_00_Fool.jpg'},
   {n:'Маг', m:'Воля, мастерство. У тебя есть все инструменты.', img:RWS+'RWS_Tarot_01_Magician.jpg'},
@@ -1089,12 +1090,14 @@ function finishWithVote(fb) {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: fb, synced: true });
 
+  var pid = state.pendingId || '';
+  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fb + '|' + pid;
+
   if (state.pendingId) {
     removePendingById(state.pendingId);
     state.pendingId = null;
   }
 
-  var payload = 'reading|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + fb + '|' + (state.pendingId || '');
   var icon = fb === 'yes' ? '✅' : (fb === 'no' ? '❌' : '🟡');
   var text = fb === 'yes' ? 'Сбылось! Спасибо' : (fb === 'no' ? 'Понятно. Учтём' : 'Спасибо за отзыв');
   sendAndClose(payload, icon, text);
@@ -1114,10 +1117,7 @@ function finishWithFull() {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
 
-  if (state.pendingId) {
-    removePendingById(state.pendingId);
-    state.pendingId = null;
-  }
+  var pid = state.pendingId || '';
 
   if (state.paidWith === 'free') {
     balance++;
@@ -1127,7 +1127,13 @@ function finishWithFull() {
 
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
-  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + (state.pendingId || '');
+  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + pid + '|' + (state.paidWith || '');
+
+  if (state.pendingId) {
+    removePendingById(state.pendingId);
+    state.pendingId = null;
+  }
+
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
@@ -1149,7 +1155,14 @@ function finishWithAccess() {
   }
   saveHistoryEntry({ ts: Date.now(), title: state.title, count: state.count, cards: cardNames, question: state.question, fb: 'full', synced: true });
 
-  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + (state.pendingId || '');
+  var pid = state.pendingId || '';
+  var payload = 'full|' + state.title + '|' + state.count + '|' + cardsStr + '|' + state.question + '|' + pid + '|' + (state.paidWith || '');
+
+  if (state.pendingId) {
+    removePendingById(state.pendingId);
+    state.pendingId = null;
+  }
+
   sendAndClose(payload, '🔍', 'Полный разбор заказан');
 }
 
