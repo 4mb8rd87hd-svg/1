@@ -341,7 +341,6 @@ try { tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initData
 var urlUid = params.get('uid') || '';
 var realUid = tgUser && tgUser.id ? String(tgUser.id) : '';
 
-// ЗАЩИТА ОТ ЧУЖОГО ПРОФИЛЯ
 if (urlUid && realUid && urlUid !== realUid) {
   document.body.innerHTML = `
     <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #08080f; color: white; text-align: center; padding: 20px; font-family: sans-serif;">
@@ -543,7 +542,6 @@ function askConfirm(text, onYes) {
   if (confirm(text)) onYes();
 }
 
-/* ===== PENDING ===== */
 function loadPending() {
   try {
     var raw = localStorage.getItem(PENDING_KEY);
@@ -623,7 +621,6 @@ function closePendingModal() {
   if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
 }
 
-/* ===== ИНИЦИАЛИЗАЦИЯ ===== */
 document.getElementById('hBal').textContent = '🎟 ' + balance;
 document.getElementById('hAcc').textContent = '🔍 ' + access;
 document.getElementById('gName').textContent = userName;
@@ -734,7 +731,6 @@ if (refLink) {
   document.getElementById('refBox').innerHTML = '<div class="task-desc" style="color:rgba(255,127,80,0.8)">⚠️ Реф-ссылка недоступна</div>';
 }
 
-// БАЗА ДАННЫХ КАРТ
 var RWS = 'https://raw.githubusercontent.com/4mb8rd87hd-svg/1/main/cards/';
 var CARDS = [
   {n:'Шут', m:'Начало, спонтанность, риск. Доверься потоку.', img:RWS+'RWS_Tarot_00_Fool.jpg.png'},
@@ -824,11 +820,6 @@ var POSITIONS = {
   10: ['Суть', 'Препятствие', 'Основа', 'Прошлое', 'Цель', 'Будущее', 'Вы', 'Окружение', 'Надежды и страхи', 'Итог']
 };
 
-(function preloadPopular() {
-  var popular = ['RWS_Tarot_00_Fool.jpg','RWS_Tarot_01_Magician.jpg','RWS_Tarot_02_High_Priestess.jpg','RWS_Tarot_03_Empress.jpg','RWS_Tarot_04_Emperor.jpg','RWS_Tarot_06_Lovers.jpg','RWS_Tarot_10_Wheel_of_Fortune.jpg','RWS_Tarot_13_Death.jpg','RWS_Tarot_17_Star.jpg','RWS_Tarot_19_Sun.jpg'];
-  for (var i = 0; i < popular.length; i++) { try { var im = new Image(); im.loading = 'lazy'; im.decoding = 'async'; im.src = RWS + popular[i]; } catch(e) {} }
-})();
-
 var state = { count: 0, cards: [], title: '', question: '', drawn: false, finished: false, paidWith: 'free', pendingId: null };
 
 function go(id) {
@@ -864,7 +855,6 @@ function checkSub() {
   catch(e) { showToast('Ошибка: ' + e.message, true); }
 }
 
-/* ===== АКТИВАЦИЯ КОДОВ ===== */
 function redeemCode() {
   var raw = document.getElementById('promoInput').value.trim().toUpperCase();
   if (raw.length < 5) { showToast('Введи код', true); return; }
@@ -984,7 +974,7 @@ function drawCards() {
     var card = CARDS[idx]; state.cards.push(card);
     var el = document.createElement('div');
     el.className = 'card';
-    var front = '<img decoding="async" src="' + card.img + '.png" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div style="font-size:13px;color:#ffb347;font-weight:800;padding:4px;text-align:center">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
+    var front = '<img src="' + card.img + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="card-fallback" style="display:none"><div style="font-size:13px;color:#ffb347;font-weight:800;padding:4px;text-align:center">' + card.n + '</div></div><div class="card-label">' + card.n + '</div>';
     el.innerHTML = '<div class="card-face card-back">*</div><div class="card-face card-front">' + front + '</div>';
     area.appendChild(el);
 
@@ -1354,7 +1344,6 @@ function backToBot() {
   } catch(e) { showToast('Ошибка', true); }
 }
 
-/* ===== Статус кнопки "Карта дня" ===== */
 function updateDailyButtonState() {
   if (getDailyCard()) {
     var btns = document.querySelectorAll('.btn');
@@ -1371,7 +1360,6 @@ function updateDailyButtonState() {
 }
 updateDailyButtonState();
 
-/* ===== КАРТА ДНЯ: 1 раз в день ===== */
 function getTodayKey() {
   var d = new Date();
   return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
@@ -1410,7 +1398,7 @@ function drawDaily() {
   var existing = getDailyCard();
   if (existing) {
     var c0 = existing.card;
-    var html0 = '<img decoding="async" class="daily-img" src="' + c0.img + '.png" onerror="this.style.display=\'none\'"><br>';
+    var html0 = '<img class="daily-img" src="' + c0.img + '" onerror="this.style.display=\'none\'"><br>';
     html0 += '<div class="daily-name">' + c0.n + '</div><div class="daily-meaning">' + c0.m + '</div>';
     html0 += '<div style="margin-top:16px;padding:12px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4">🌅 Карта дня уже вытянута.<br>Новая — завтра ✨</div>';
     box.style.perspective = '';
@@ -1425,7 +1413,7 @@ function drawDaily() {
 
   box.innerHTML = '<div class="card" id="dailyAnimCard" style="margin:0 auto">'
     + '<div class="card-face card-back">✦</div>'
-    + '<div class="card-face card-front"><img decoding="async" src="' + card.img + '.png" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+    + '<div class="card-face card-front"><img src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
     + '<div class="card-fallback" style="display:none"><div style="font-size:13px;color:#ffb347;font-weight:800;padding:4px;text-align:center">' + card.n + '</div></div>'
     + '<div class="card-label">' + card.n + '</div></div></div>';
   box.style.perspective = '1200px';
@@ -1474,7 +1462,7 @@ function drawDaily() {
       saveDailyCard(card);
 
       setTimeout(function() {
-        var html = '<img loading="lazy" decoding="async" class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
+        var html = '<img class="daily-img" src="' + card.img + '" onerror="this.style.display=\'none\'"><br>';
         html += '<div class="daily-name">' + card.n + '</div><div class="daily-meaning">' + card.m + '</div>';
         html += '<div style="margin-top:16px;padding:12px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4">🌅 Карта дня уже вытянута.<br>Новая — завтра ✨</div>';
         box.style.perspective = '';
