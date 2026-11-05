@@ -196,7 +196,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 <body>
 <div class="app">
   <div class="dim" id="dim"></div>
-<div class="glow" id="glow"></div>
+  <div class="glow" id="glow"></div>
   <div class="header">
     <div class="logo">
       <div class="logo-icon">
@@ -335,9 +335,32 @@ if (tg) {
 }
 
 var params = new URLSearchParams(window.location.search);
+var tgUser = null;
+try { tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null; } catch(e) {}
+
+var urlUid = params.get('uid') || '';
+var realUid = tgUser && tgUser.id ? String(tgUser.id) : '';
+
+// ЗАЩИТА ОТ ЧУЖОГО ПРОФИЛЯ
+if (urlUid && realUid && urlUid !== realUid) {
+  document.body.innerHTML = `
+    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #08080f; color: white; text-align: center; padding: 20px; font-family: sans-serif;">
+      <div style="font-size: 60px; margin-bottom: 20px;">🛑</div>
+      <h2 style="margin-bottom: 10px;">Ошибка доступа</h2>
+      <p style="color: #888; margin-bottom: 30px; font-size: 14px; line-height: 1.5;">Ссылка принадлежит другому пользователю.<br>Пожалуйста, нажмите /start в боте, чтобы обновить вашу личную ссылку.</p>
+      <button onclick="window.Telegram.WebApp.close()" style="padding: 15px 30px; background: #ffb347; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; color: #000;">Закрыть</button>
+    </div>
+  `;
+  throw new Error("UID mismatch protection triggered");
+}
+
+var myUid = urlUid || realUid || 'anon';
 var balance = parseInt(params.get('bal') || '0');
 var access = parseInt(params.get('acc') || '0');
-var userName = params.get('name') || 'друг';
+var userName = params.get('name') || (tgUser ? tgUser.first_name : 'друг');
+try { userName = decodeURIComponent(userName); } catch(e) {}
+if (userName.includes('%20')) userName = userName.replace(/%20/g, ' ');
+
 var readings = parseInt(params.get('read') || '0');
 var sub = params.get('sub') === '1';
 var inv = parseInt(params.get('inv') || '0');
@@ -347,19 +370,6 @@ var fbYes = parseInt(params.get('y') || '0');
 var fbNo = parseInt(params.get('n') || '0');
 var fbPartly = parseInt(params.get('p') || '0');
 var nc = params.get('nc') === '1';
-var myUid = params.get('uid') || '';
-
-var tgUser = null;
-try { tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null; } catch(e) {}
-
-// FIX #15: если URL uid не совпадает с реальным tgUser.id — используем реальный
-(function fixUid() {
-  var realUid = tgUser && tgUser.id ? String(tgUser.id) : '';
-  if (realUid && myUid && myUid !== realUid) {
-    console.warn('UID mismatch: URL=' + myUid + ', TG=' + realUid + ' — используем TG');
-    myUid = realUid;
-  }
-})();
 
 function getUserId() {
   if (myUid) return myUid;
@@ -566,7 +576,6 @@ function flushPendingToBot() {
   var items = [];
   for (var i = 0; i < arr.length; i++) {
     var _it = arr[i];
-    // FIX #10: sanitize и | и ~
     var _t = String(_it.title || '?').replace(/[|~]/g, ' ');
     var _c = String(_it.count || '?').replace(/[|~]/g, ' ');
     var _q = String(_it.question || '-').replace(/[|~]/g, ' ');
@@ -582,7 +591,7 @@ function flushPendingToBot() {
     try {
       tg.sendData(payload);
       savePending([]);
-      closePendingModal(); // FIX #6
+      closePendingModal();
       setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
     } catch(e) {
       if (ov.parentNode) ov.parentNode.removeChild(ov);
@@ -849,7 +858,7 @@ function copyRef() {
   } else { showToast('Скопируй вручную', true); }
 }
 function checkSub() {
-  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
   try { tg.sendData('check_sub|||'); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
   catch(e) { showToast('Ошибка: ' + e.message, true); }
 }
@@ -861,7 +870,7 @@ function redeemCode() {
   var codes = raw.split(/[\s,;]+/).filter(function(c) { return c.length >= 5; });
   if (codes.length === 0) { showToast('Введи код', true); return; }
 
-  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
 
   var payload = 'redeem_batch|' + codes.join('|');
   var ov = document.createElement('div');
@@ -937,7 +946,6 @@ function startReading(count, title) {
 
 var _drawingInProgress = false;
 function drawCards() {
-  // FIX #3: защита от двойного тапа
   if (_drawingInProgress) return;
   if (state.drawn) return;
   if (balance < 1 && access < 1) { openNoKeysModal(); return; }
@@ -945,7 +953,6 @@ function drawCards() {
   haptic('medium');
 
   var rawQ = document.getElementById('qinput').value.trim();
-  // FIX #10: sanitize и | и ~
   state.question = (rawQ || 'без вопроса').replace(/[|~]/g, ' ');
   state.drawn = true;
 
@@ -1026,7 +1033,7 @@ function drawCards() {
     showInterpretation();
     showActionButtons();
     haptic('success');
-    _drawingInProgress = false; // FIX #3
+    _drawingInProgress = false;
   }, 400 + 3000 + 500);
 }
 function showInterpretation() {
@@ -1073,7 +1080,6 @@ function finishWithVote(fb) {
   if (state.finished) return;
   if (!state.drawn) return;
   state.finished = true;
-  // FIX #10: sanitize вопроса
   if (state.question) state.question = String(state.question).replace(/[|~]/g, ' ');
   var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
@@ -1148,7 +1154,6 @@ function finishWithAccess() {
 }
 
 function sendAndClose(payload, icon, text) {
-  // FIX #23: проверка tg
   if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
   soundSuccess(); haptic('success');
   var ov = document.createElement('div');
@@ -1270,7 +1275,7 @@ function markFb(idx, result) {
 function syncHistory() {
   var unsync = getUnsyncedCounts();
   if (unsync.total === 0) { showToast('Всё синхронизировано'); return; }
-  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
   var payload = 'sync_fb|' + unsync.yes + '|' + unsync.no + '|' + unsync.partly;
   var ov = document.createElement('div');
   ov.className = 'success-overlay';
@@ -1307,9 +1312,8 @@ function updateSupportCounter() {
 function sendSupport() {
   var text = document.getElementById('supportText').value.trim();
   if (text.length < 2) { showToast('Напиши сообщение', true); return; }
-  // FIX #10: sanitize | и ~
   text = text.replace(/[|~]/g, ' ').replace(/\n+/g, ' ').substring(0, 500);
-  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
   var ov = document.createElement('div');
   ov.className = 'success-overlay';
   ov.innerHTML = '<div class="success-icon">✅</div><div class="success-text">Отправлено</div><div class="success-sub">Возвращаемся в бот...</div>';
@@ -1329,7 +1333,7 @@ function backToBot() {
   } else {
     payload = 'back|||';
   }
-  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
   try {
     tg.sendData(payload);
     if (unsync.total > 0) markAllSynced();
@@ -1339,7 +1343,6 @@ function backToBot() {
 
 /* ===== Статус кнопки "Карта дня" ===== */
 function updateDailyButtonState() {
-  // FIX #17: вынесено в функцию — вызывается и при init, и после saveDailyCard
   if (getDailyCard()) {
     var btns = document.querySelectorAll('.btn');
     for (var i = 0; i < btns.length; i++) {
@@ -1376,18 +1379,15 @@ function saveDailyCard(card) {
       card: { n: card.n, m: card.m, img: card.img }
     }));
   } catch(e) {}
-  // FIX #17: обновляем кнопку
   updateDailyButtonState();
 }
 
 var _dailyInProgress = false;
 function drawDaily() {
-  // FIX #2: защита от двойного тапа
   if (_dailyInProgress) return;
   _dailyInProgress = true;
   haptic('medium');
 
-  // FIX #2: сбрасываем фон перед показом
   var _d0 = document.getElementById('dim'), _g0 = document.getElementById('glow');
   if (_d0) _d0.classList.remove('on');
   if (_g0) _g0.classList.remove('on');
@@ -1446,7 +1446,6 @@ function drawDaily() {
 
     el.addEventListener('animationend', function onEnd() {
       el.removeEventListener('animationend', onEnd);
-      // FIX #2: проверяем, что элемент ещё в DOM
       if (document.getElementById('dailyAnimCard') !== el) {
         _dailyInProgress = false;
         return;
