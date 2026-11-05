@@ -351,6 +351,16 @@ var myUid = params.get('uid') || '';
 
 var tgUser = null;
 try { tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null; } catch(e) {}
+
+// FIX #15: если URL uid не совпадает с реальным tgUser.id — используем реальный
+(function fixUid() {
+  var realUid = tgUser && tgUser.id ? String(tgUser.id) : '';
+  if (realUid && myUid && myUid !== realUid) {
+    console.warn('UID mismatch: URL=' + myUid + ', TG=' + realUid + ' — используем TG');
+    myUid = realUid;
+  }
+})();
+
 function getUserId() {
   if (myUid) return myUid;
   if (tgUser && tgUser.id) return String(tgUser.id);
@@ -475,8 +485,6 @@ function doStartMusic() {
   } catch(e) { musicGain = null; }
 }
 
-function startMusic() { doStartMusic(); }
-
 function scheduleMelody() {
   if (!musicGain || !audioCtx) return;
   var notes = [659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
@@ -554,9 +562,11 @@ function removePendingById(id) {
 function flushPendingToBot() {
   var arr = loadPending();
   if (!arr.length) { showToast('Нет неотмеченных раскладов'); return; }
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
   var items = [];
   for (var i = 0; i < arr.length; i++) {
     var _it = arr[i];
+    // FIX #10: sanitize и | и ~
     var _t = String(_it.title || '?').replace(/[|~]/g, ' ');
     var _c = String(_it.count || '?').replace(/[|~]/g, ' ');
     var _q = String(_it.question || '-').replace(/[|~]/g, ' ');
@@ -569,18 +579,14 @@ function flushPendingToBot() {
   document.body.appendChild(ov);
   soundSuccess(); haptic('success');
   setTimeout(function() {
-    if (tg && tg.sendData) {
-      try {
-        tg.sendData(payload);
-        savePending([]);
-        setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
-      } catch(e) {
-        if (ov.parentNode) ov.parentNode.removeChild(ov);
-        showToast('Ошибка: ' + e.message, true);
-      }
-    } else {
+    try {
+      tg.sendData(payload);
+      savePending([]);
+      closePendingModal(); // FIX #6
+      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
+    } catch(e) {
       if (ov.parentNode) ov.parentNode.removeChild(ov);
-      showToast('Открой из Telegram', true);
+      showToast('Ошибка: ' + e.message, true);
     }
   }, 800);
 }
@@ -843,19 +849,19 @@ function copyRef() {
   } else { showToast('Скопируй вручную', true); }
 }
 function checkSub() {
-  if (tg && tg.sendData) {
-    try { tg.sendData('check_sub|||'); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-    catch(e) { showToast('Ошибка: ' + e.message, true); }
-  }
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
+  try { tg.sendData('check_sub|||'); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+  catch(e) { showToast('Ошибка: ' + e.message, true); }
 }
 
-/* ===== ПАКЕТНАЯ АКТИВАЦИЯ КОДОВ ===== */
+/* ===== АКТИВАЦИЯ КОДОВ ===== */
 function redeemCode() {
   var raw = document.getElementById('promoInput').value.trim().toUpperCase();
   if (raw.length < 5) { showToast('Введи код', true); return; }
-
   var codes = raw.split(/[\s,;]+/).filter(function(c) { return c.length >= 5; });
   if (codes.length === 0) { showToast('Введи код', true); return; }
+
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
 
   var payload = 'redeem_batch|' + codes.join('|');
   var ov = document.createElement('div');
@@ -865,10 +871,8 @@ function redeemCode() {
   soundSuccess(); haptic('success');
 
   setTimeout(function() {
-    if (tg && tg.sendData) {
-      try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
-    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
+    try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+    catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
   }, 800);
 }
 
@@ -931,13 +935,18 @@ function startReading(count, title) {
   go('s-reading');
 }
 
+var _drawingInProgress = false;
 function drawCards() {
+  // FIX #3: защита от двойного тапа
+  if (_drawingInProgress) return;
   if (state.drawn) return;
   if (balance < 1 && access < 1) { openNoKeysModal(); return; }
+  _drawingInProgress = true;
   haptic('medium');
 
   var rawQ = document.getElementById('qinput').value.trim();
-  state.question = (rawQ || 'без вопроса').replace(/\|/g, ' ');
+  // FIX #10: sanitize и | и ~
+  state.question = (rawQ || 'без вопроса').replace(/[|~]/g, ' ');
   state.drawn = true;
 
   if (balance >= 1) {
@@ -1017,6 +1026,7 @@ function drawCards() {
     showInterpretation();
     showActionButtons();
     haptic('success');
+    _drawingInProgress = false; // FIX #3
   }, 400 + 3000 + 500);
 }
 function showInterpretation() {
@@ -1063,6 +1073,8 @@ function finishWithVote(fb) {
   if (state.finished) return;
   if (!state.drawn) return;
   state.finished = true;
+  // FIX #10: sanitize вопроса
+  if (state.question) state.question = String(state.question).replace(/[|~]/g, ' ');
   var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
@@ -1087,6 +1099,7 @@ function finishWithFull() {
   if (!state.drawn) return;
   if (access < 1) { showToast('Нет разборов', true); return; }
   state.finished = true;
+  if (state.question) state.question = String(state.question).replace(/[|~]/g, ' ');
   var cardsStr = '', cardNames = [];
   for (var i = 0; i < state.cards.length; i++) {
     if (i > 0) cardsStr += ', ';
@@ -1117,6 +1130,7 @@ function finishWithAccess() {
   if (!state.drawn) return;
   if (access < 1) { showToast('Нет разборов', true); return; }
   state.finished = true;
+  if (state.question) state.question = String(state.question).replace(/[|~]/g, ' ');
 
   access = Math.max(0, access - 1);
   document.getElementById('hAcc').textContent = '🔍 ' + access;
@@ -1134,16 +1148,16 @@ function finishWithAccess() {
 }
 
 function sendAndClose(payload, icon, text) {
+  // FIX #23: проверка tg
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; }
   soundSuccess(); haptic('success');
   var ov = document.createElement('div');
   ov.className = 'success-overlay';
   ov.innerHTML = '<div class="success-icon">' + (icon || '✨') + '</div><div class="success-text">' + (text || 'Отправлено') + '</div><div class="success-sub">Возвращаемся в бот...</div>';
   document.body.appendChild(ov);
   setTimeout(function() {
-    if (tg && tg.sendData) {
-      try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
-    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
+    try { tg.sendData(payload); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+    catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
   }, 900);
 }
 
@@ -1256,6 +1270,7 @@ function markFb(idx, result) {
 function syncHistory() {
   var unsync = getUnsyncedCounts();
   if (unsync.total === 0) { showToast('Всё синхронизировано'); return; }
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
   var payload = 'sync_fb|' + unsync.yes + '|' + unsync.no + '|' + unsync.partly;
   var ov = document.createElement('div');
   ov.className = 'success-overlay';
@@ -1292,17 +1307,17 @@ function updateSupportCounter() {
 function sendSupport() {
   var text = document.getElementById('supportText').value.trim();
   if (text.length < 2) { showToast('Напиши сообщение', true); return; }
-  text = text.replace(/\|/g, ' ').replace(/\n+/g, ' ').substring(0, 500);
+  // FIX #10: sanitize | и ~
+  text = text.replace(/[|~]/g, ' ').replace(/\n+/g, ' ').substring(0, 500);
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
   var ov = document.createElement('div');
   ov.className = 'success-overlay';
   ov.innerHTML = '<div class="success-icon">✅</div><div class="success-text">Отправлено</div><div class="success-sub">Возвращаемся в бот...</div>';
   document.body.appendChild(ov);
   soundSuccess(); haptic('success');
   setTimeout(function() {
-    if (tg && tg.sendData) {
-      try { tg.sendData('support|' + text); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
-      catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
-    } else { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Открой из Telegram', true); }
+    try { tg.sendData('support|' + text); setTimeout(function() { try { tg.close(); } catch(e) {} }, 100); }
+    catch(e) { if (ov.parentNode) ov.parentNode.removeChild(ov); showToast('Ошибка: ' + e.message, true); }
   }, 1000);
 }
 
@@ -1314,18 +1329,17 @@ function backToBot() {
   } else {
     payload = 'back|||';
   }
-  if (tg && tg.sendData) {
-    try {
-      tg.sendData(payload);
-      if (unsync.total > 0) markAllSynced();
-      setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
-    }
-    catch(e) { showToast('Ошибка', true); }
-  } else { showToast('Открой из Telegram', true); }
+  if (!(tg && tg.sendData)) { showToast('Открой из Telegram', true); return; } // FIX #1
+  try {
+    tg.sendData(payload);
+    if (unsync.total > 0) markAllSynced();
+    setTimeout(function() { try { tg.close(); } catch(e) {} }, 100);
+  } catch(e) { showToast('Ошибка', true); }
 }
 
 /* ===== Статус кнопки "Карта дня" ===== */
-(function initDailyButtonState() {
+function updateDailyButtonState() {
+  // FIX #17: вынесено в функцию — вызывается и при init, и после saveDailyCard
   if (getDailyCard()) {
     var btns = document.querySelectorAll('.btn');
     for (var i = 0; i < btns.length; i++) {
@@ -1338,7 +1352,9 @@ function backToBot() {
       }
     }
   }
-})();
+}
+updateDailyButtonState();
+
 /* ===== КАРТА ДНЯ: 1 раз в день ===== */
 function getTodayKey() {
   var d = new Date();
@@ -1360,14 +1376,24 @@ function saveDailyCard(card) {
       card: { n: card.n, m: card.m, img: card.img }
     }));
   } catch(e) {}
+  // FIX #17: обновляем кнопку
+  updateDailyButtonState();
 }
-function isDailyDone() { return !!getDailyCard(); }
 
+var _dailyInProgress = false;
 function drawDaily() {
+  // FIX #2: защита от двойного тапа
+  if (_dailyInProgress) return;
+  _dailyInProgress = true;
   haptic('medium');
+
+  // FIX #2: сбрасываем фон перед показом
+  var _d0 = document.getElementById('dim'), _g0 = document.getElementById('glow');
+  if (_d0) _d0.classList.remove('on');
+  if (_g0) _g0.classList.remove('on');
+
   var box = document.getElementById('dbox');
 
-  // Уже вытянута сегодня — показываем ту же карту без анимации
   var existing = getDailyCard();
   if (existing) {
     var c0 = existing.card;
@@ -1378,10 +1404,10 @@ function drawDaily() {
     box.innerHTML = html0;
     go('s-result');
     showToast('🌅 Карта дня уже вытянута');
+    _dailyInProgress = false;
     return;
   }
 
-  // Новая карта — с анимацией
   var card = CARDS[Math.floor(Math.random() * CARDS.length)];
 
   box.innerHTML = '<div class="card" id="dailyAnimCard" style="margin:0 auto">'
@@ -1395,7 +1421,7 @@ function drawDaily() {
 
   setTimeout(function() {
     var el = document.getElementById('dailyAnimCard');
-    if (!el) return;
+    if (!el) { _dailyInProgress = false; return; }
     var contentEl = document.querySelector('.content');
     var savedOverflow = contentEl.style.overflow;
     contentEl.style.overflow = 'visible';
@@ -1420,6 +1446,11 @@ function drawDaily() {
 
     el.addEventListener('animationend', function onEnd() {
       el.removeEventListener('animationend', onEnd);
+      // FIX #2: проверяем, что элемент ещё в DOM
+      if (document.getElementById('dailyAnimCard') !== el) {
+        _dailyInProgress = false;
+        return;
+      }
       el.classList.remove('opening');
       el.classList.add('flipped-static');
       el.style.zIndex = '';
@@ -1428,7 +1459,6 @@ function drawDaily() {
       if (d) d.classList.remove('on');
       if (g) g.classList.remove('on');
 
-      // Сохраняем карту дня
       saveDailyCard(card);
 
       setTimeout(function() {
@@ -1437,6 +1467,7 @@ function drawDaily() {
         html += '<div style="margin-top:16px;padding:12px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4">🌅 Карта дня уже вытянута.<br>Новая — завтра ✨</div>';
         box.style.perspective = '';
         box.innerHTML = html;
+        _dailyInProgress = false;
       }, 600);
     });
   }, 150);
