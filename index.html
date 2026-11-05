@@ -1410,7 +1410,7 @@ function drawDaily() {
   var existing = getDailyCard();
   if (existing) {
     var c0 = existing.card;
-    var html0 = '<img loading="lazy" decoding="async" class="daily-img" src="' + c0.img + '" onerror="this.style.display=\'none\'"><br>';
+    var html0 = '<img decoding="async" class="daily-img" src="' + c0.img + '.png" onerror="this.style.display=\'none\'"><br>';
     html0 += '<div class="daily-name">' + c0.n + '</div><div class="daily-meaning">' + c0.m + '</div>';
     html0 += '<div style="margin-top:16px;padding:12px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.3);border-radius:12px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4">🌅 Карта дня уже вытянута.<br>Новая — завтра ✨</div>';
     box.style.perspective = '';
