@@ -1425,7 +1425,7 @@ function drawDaily() {
 
   box.innerHTML = '<div class="card" id="dailyAnimCard" style="margin:0 auto">'
     + '<div class="card-face card-back">✦</div>'
-    + '<div class="card-face card-front"><img loading="lazy" decoding="async" src="' + card.img + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+    + '<div class="card-face card-front"><img decoding="async" src="' + card.img + '.png" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
     + '<div class="card-fallback" style="display:none"><div style="font-size:13px;color:#ffb347;font-weight:800;padding:4px;text-align:center">' + card.n + '</div></div>'
     + '<div class="card-label">' + card.n + '</div></div></div>';
   box.style.perspective = '1200px';
